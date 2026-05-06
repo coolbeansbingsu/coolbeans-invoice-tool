@@ -984,19 +984,56 @@ function updateSummary(d) {
 // ── DOWNLOAD PDF ───────────────────────────────────────────────────────────
 function downloadPDF() {
   if (!invoiceData) { toast('Generate an invoice first', 'red'); return; }
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ unit: 'pt', format: 'letter' });
-  const el = document.getElementById('invoice-preview');
-  doc.html(el, {
-    callback: function(doc) {
-      const name = invoiceData.clientName.replace(/\s+/g,'_').toLowerCase();
-      doc.save(`invoice_${name}_${invoiceData.invoiceNum}.pdf`);
-      toast('✅ PDF downloaded!', 'green');
-    },
-    x: 0, y: 0,
-    width: 612,
-    windowWidth: 816
-  });
+  
+  const printWindow = window.open('', '_blank');
+  const invoiceHTML = document.getElementById('invoice-preview').innerHTML;
+  
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Invoice - ${invoiceData.clientName}</title>
+      <style>
+        @media print { body { margin: 0; } }
+        body { font-family: Helvetica, Arial, sans-serif; margin: 0; padding: 40px; }
+        .inv-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; }
+        .inv-logo { max-width: 220px; max-height: 40px; }
+        .inv-meta { text-align: right; font-size: 10px; line-height: 1.7; }
+        .inv-meta .meta-row { display: flex; justify-content: flex-end; gap: 6px; }
+        .inv-meta .meta-label { font-weight: 700; }
+        .inv-meta .meta-contact { color: #555; margin-top: 4px; }
+        .inv-section-title { font-size: 13px; font-weight: 700; margin-bottom: 6px; margin-top: 16px; }
+        .inv-field { font-size: 10px; line-height: 1.8; color: #222; }
+        .inv-table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 10px; }
+        .inv-table th { background: #5b7fa6; color: white; font-weight: 700; text-align: center; padding: 7px 6px; font-size: 10px; }
+        .inv-table td { padding: 6px 8px; border: 0.3px solid #ccc; text-align: center; vertical-align: middle; }
+        .inv-table td:first-child { text-align: left; }
+        .inv-table tr:nth-child(even) td { background: #f0f4f8; }
+        .inv-table tr:nth-child(odd) td { background: white; }
+        .inv-total-row td { background: #5b7fa6 !important; color: white; font-weight: 700; font-size: 11px; text-align: center; padding: 7px 8px; border: 0.3px solid #8aaac8; }
+        .inv-payment { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 10px; }
+        .inv-payment td { padding: 6px 10px; border: 0.3px solid #ccc; background: #f0f4f8; text-align: center; font-weight: 700; vertical-align: middle; }
+        .inv-payment .sched-label { width: 22%; border-right: 1px solid #aaa; }
+        .inv-payment .sched-desc { width: 60%; }
+        .inv-payment .sched-amt { width: 18%; }
+        .inv-terms { font-size: 8.5px; color: #444; line-height: 1.5; margin-top: 16px; }
+        .inv-terms b { font-weight: 700; }
+        .inv-sig { display: flex; justify-content: space-between; margin-top: 32px; gap: 40px; }
+        .inv-sig-block { flex: 1; }
+        .inv-sig-line { border-bottom: 0.5px solid black; margin-bottom: 4px; height: 20px; }
+        .inv-sig-label { font-size: 10px; font-weight: 700; }
+      </style>
+    </head>
+    <body>${invoiceHTML}</body>
+    </html>
+  `);
+  
+  printWindow.document.close();
+  printWindow.focus();
+  setTimeout(() => {
+    printWindow.print();
+    printWindow.close();
+  }, 500);
 }
 
 // ── GOOGLE SHEETS ─────────────────────────────────────────────────────────
