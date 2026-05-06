@@ -635,6 +635,7 @@
       <div style="display:flex;gap:6px;margin-bottom:12px">
         <button class="btn btn-secondary" id="sortRecent" onclick="setHistorySort('recent')" style="flex:1;padding:6px;font-size:0.75rem;background:var(--blue);color:white">Most Recent</button>
         <button class="btn btn-secondary" id="sortEvent" onclick="setHistorySort('event')" style="flex:1;padding:6px;font-size:0.75rem">By Event Date</button>
+        <button class="btn btn-secondary" id="sortInvoice" onclick="setHistorySort('invoice')" style="flex:1;padding:6px;font-size:0.75rem">By Invoice #</button>
       </div>
       <div id="historyList" style="display:flex;flex-direction:column;gap:8px"></div>
     </div>
@@ -853,6 +854,8 @@ function setHistorySort(mode) {
   document.getElementById('sortRecent').style.color = mode === 'recent' ? 'white' : '';
   document.getElementById('sortEvent').style.background = mode === 'event' ? 'var(--blue)' : '';
   document.getElementById('sortEvent').style.color = mode === 'event' ? 'white' : '';
+  document.getElementById('sortInvoice').style.background = mode === 'invoice' ? 'var(--blue)' : '';
+  document.getElementById('sortInvoice').style.color = mode === 'invoice' ? 'white' : '';
   renderHistory();
 }
 
@@ -875,6 +878,8 @@ function renderHistory() {
   // Sort
   if (historySortMode === 'event') {
     history.sort((a, b) => new Date(b.eventDate) - new Date(a.eventDate));
+  } else if (historySortMode === 'invoice') {
+    history.sort((a, b) => parseInt(b.invoiceNum) - parseInt(a.invoiceNum));
   } else {
     history.sort((a, b) => new Date(b._savedAt) - new Date(a._savedAt));
   }
