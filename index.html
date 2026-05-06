@@ -1095,7 +1095,7 @@ function renderPreview(d) {
         <tr><th>Description</th><th>Unit Price</th><th>Qty</th><th>Total</th></tr>
       </thead>
       <tbody>
-        <tr><td>Base Event Fee (1 Bar Cart, 2 Servers)</td><td>$500</td><td>1</td><td>$500.00</td></tr>
+        <tr><td>Base Event Fee (1 Bar Cart, 2 Servers)</td><td>${formatCurrency(d.baseFee || 0)}</td><td>1</td><td>${formatCurrency(d.baseFee || 0)}</td></tr>
         <tr><td>Bingsu Servings</td><td>$8.75</td><td>${d.servings}</td><td>${formatCurrency(d.bingsuTotal)}</td></tr>
         <tr><td>Mileage Fee</td><td>$1/mi</td><td>${d.mileage > 0 ? d.mileage + ' mi' : '0'}</td><td>${d.mileage > 0 ? formatCurrency(d.mileageTotal) : '$0.00'}</td></tr>
         ${addTimeRow}
