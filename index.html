@@ -572,21 +572,40 @@ logoBase64 = null; // will render text logo as fallback
 // Set today's date
 document.getElementById('dateIssued').value = new Date().toISOString().split('T')[0];
 
-// API key watchers
-document.getElementById('googleApiKey').addEventListener('input', function() {
+// API key watchers + localStorage persistence
+const googleKeyInput = document.getElementById('googleApiKey');
+const anthropicKeyInput = document.getElementById('anthropicApiKey');
+
+// Load saved keys on startup
+if (localStorage.getItem('cb_google_key')) {
+  googleKeyInput.value = localStorage.getItem('cb_google_key');
+  document.getElementById('apiStatus').textContent = 'Set ✓';
+  document.getElementById('apiStatus').className = 'api-status ok';
+}
+if (localStorage.getItem('cb_anthropic_key')) {
+  anthropicKeyInput.value = localStorage.getItem('cb_anthropic_key');
+  document.getElementById('anthropicStatus').textContent = 'Set ✓';
+  document.getElementById('anthropicStatus').className = 'api-status ok';
+}
+
+googleKeyInput.addEventListener('input', function() {
   const status = document.getElementById('apiStatus');
   if (this.value.length > 10) {
     status.textContent = 'Set ✓'; status.className = 'api-status ok';
+    localStorage.setItem('cb_google_key', this.value);
   } else {
     status.textContent = 'Not set'; status.className = 'api-status missing';
+    localStorage.removeItem('cb_google_key');
   }
 });
-document.getElementById('anthropicApiKey').addEventListener('input', function() {
+anthropicKeyInput.addEventListener('input', function() {
   const status = document.getElementById('anthropicStatus');
   if (this.value.length > 10) {
     status.textContent = 'Set ✓'; status.className = 'api-status ok';
+    localStorage.setItem('cb_anthropic_key', this.value);
   } else {
     status.textContent = 'Not set'; status.className = 'api-status missing';
+    localStorage.removeItem('cb_anthropic_key');
   }
 });
 
