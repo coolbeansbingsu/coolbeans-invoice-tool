@@ -573,6 +573,20 @@ logoBase64 = null; // will render text logo as fallback
 // Set today's date
 document.getElementById('dateIssued').value = new Date().toISOString().split('T')[0];
 
+// Auto-incrementing invoice number
+const STARTING_INVOICE = 10658;
+function getNextInvoiceNum() {
+  var current = parseInt(localStorage.getItem('cb_invoice_num') || STARTING_INVOICE);
+  return current;
+}
+function incrementInvoiceNum() {
+  var current = parseInt(localStorage.getItem('cb_invoice_num') || STARTING_INVOICE);
+  localStorage.setItem('cb_invoice_num', current + 1);
+}
+
+// Set invoice number on load
+document.getElementById('invoiceNum').value = getNextInvoiceNum();
+
 // API key watchers + localStorage persistence
 const googleKeyInput = document.getElementById('googleApiKey');
 const anthropicKeyInput = document.getElementById('anthropicApiKey');
@@ -865,6 +879,8 @@ function generateInvoice() {
   document.getElementById('downloadBtn').disabled = false;
   document.getElementById('sheetsBtn').disabled = false;
   document.getElementById('calBtn').disabled = false;
+  incrementInvoiceNum();
+  document.getElementById('invoiceNum').value = getNextInvoiceNum();
   switchTab('summary');
   toast('✅ Invoice generated!', 'green');
 }
@@ -992,7 +1008,11 @@ function downloadPDF() {
     <!DOCTYPE html>
     <html>
     <head>
-      <title>Invoice - ${invoiceData.clientName}</title>
+      <title>${(function() {
+        var dp = invoiceData.eventDate ? invoiceData.eventDate.split('-') : ['','',''];
+        var dateStr = dp[1] + '.' + dp[2] + '.' + dp[0].slice(2);
+        return invoiceData.clientName + ' ' + dateStr + ' #' + invoiceData.invoiceNum;
+      })()}</title>
       <style>
         @media print { body { margin: 0; } }
         body { font-family: Helvetica, Arial, sans-serif; margin: 0; padding: 40px; }
