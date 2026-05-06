@@ -483,6 +483,22 @@
     text-transform: uppercase;
     letter-spacing: 0.06em;
   }
+  .history-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    transition: border-color 0.15s;
+  }
+  .history-card:hover { border-color: var(--blue); }
+  .history-card .hc-top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .history-card .hc-name { font-size: 0.85rem; font-weight: 600; color: var(--text); }
+  .history-card .hc-total { font-size: 0.85rem; font-weight: 600; color: var(--blue-dark); }
+  .history-card .hc-meta { font-size: 0.75rem; color: var(--muted); margin-top: 3px; }
+  .history-card .hc-actions { display: flex; gap: 6px; margin-top: 8px; }
+  .history-card .hc-load { font-size: 0.75rem; padding: 4px 10px; background: var(--blue-light); color: var(--blue-dark); border: 1px solid var(--border); border-radius: 5px; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+  .history-card .hc-delete { font-size: 0.75rem; padding: 4px 10px; background: #fee2e2; color: #c0392b; border: 1px solid #fca5a5; border-radius: 5px; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+  .history-empty { font-size: 0.8rem; color: var(--muted); text-align: center; padding: 20px 0; }
 </style>
 </head>
 <body>
@@ -506,6 +522,7 @@
       <button class="tab-btn active" onclick="switchTab('form')">📋 Form Entry</button>
       <button class="tab-btn" onclick="switchTab('paste')">📥 Paste Inquiry</button>
       <button class="tab-btn" onclick="switchTab('summary')">💰 Summary</button>
+      <button class="tab-btn" onclick="switchTab('history');renderHistory()">🕘 History</button>
     </div>
 
     <!-- FORM TAB -->
@@ -605,6 +622,21 @@
         <p style="font-size:0.75rem;color:var(--muted);margin-bottom:8px">Only add to calendar once the client has confirmed and paid the deposit.</p>
         <button class="btn btn-outline" onclick="addToCalendar()" id="calBtn" disabled>📅 Add to Google Calendar</button>
       </div>
+    </div>
+
+    <!-- HISTORY TAB -->
+    <div class="tab-content" id="tab-history">
+      <div class="section-label">Invoice History</div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">
+        <input type="text" id="historySearch" placeholder="🔍 Search by name, type, venue..." 
+          style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:7px;font-size:0.8rem;font-family:'DM Sans',sans-serif"
+          oninput="renderHistory()">
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:12px">
+        <button class="btn btn-secondary" id="sortRecent" onclick="setHistorySort('recent')" style="flex:1;padding:6px;font-size:0.75rem;background:var(--blue);color:white">Most Recent</button>
+        <button class="btn btn-secondary" id="sortEvent" onclick="setHistorySort('event')" style="flex:1;padding:6px;font-size:0.75rem">By Event Date</button>
+      </div>
+      <div id="historyList" style="display:flex;flex-direction:column;gap:8px"></div>
     </div>
   </div>
 
@@ -766,11 +798,12 @@ anthropicKeyInput.addEventListener('input', function() {
 
 // ── TABS ──────────────────────────────────────────────────────────────────
 function switchTab(tab) {
+  const tabs = ['form','paste','summary','history'];
   document.querySelectorAll('.tab-btn').forEach((b,i) => {
-    b.classList.toggle('active', ['form','paste','summary'][i] === tab);
+    b.classList.toggle('active', tabs[i] === tab);
   });
   document.querySelectorAll('.tab-content').forEach((c,i) => {
-    c.classList.toggle('active', ['tab-form','tab-paste','tab-summary'][i] === `tab-${tab}`);
+    c.classList.toggle('active', `tab-${tabs[i]}` === `tab-${tab}`);
   });
 }
 
@@ -780,6 +813,142 @@ function toast(msg, type='') {
   t.textContent = msg;
   t.className = `toast show ${type}`;
   setTimeout(() => t.className = 'toast', 2500);
+}
+
+// ── INVOICE HISTORY ────────────────────────────────────────────────────────
+const MAX_HISTORY = 200;
+const TRIM_TO = 180; // trim to this when near capacity
+let historySortMode = 'recent';
+
+function saveToHistory(data) {
+  let history = getHistory();
+  // Add timestamp
+  data._savedAt = new Date().toISOString();
+  data._id = Date.now();
+  history.unshift(data);
+  // Auto-trim if over capacity
+  if (history.length > MAX_HISTORY) {
+    history = history.slice(0, TRIM_TO);
+    toast('ℹ️ Oldest invoices auto-removed to free space', '');
+  }
+  localStorage.setItem('cb_invoice_history', JSON.stringify(history));
+}
+
+function getHistory() {
+  try {
+    return JSON.parse(localStorage.getItem('cb_invoice_history') || '[]');
+  } catch(e) { return []; }
+}
+
+function deleteFromHistory(id) {
+  let history = getHistory();
+  history = history.filter(h => h._id !== id);
+  localStorage.setItem('cb_invoice_history', JSON.stringify(history));
+  renderHistory();
+}
+
+function setHistorySort(mode) {
+  historySortMode = mode;
+  document.getElementById('sortRecent').style.background = mode === 'recent' ? 'var(--blue)' : '';
+  document.getElementById('sortRecent').style.color = mode === 'recent' ? 'white' : '';
+  document.getElementById('sortEvent').style.background = mode === 'event' ? 'var(--blue)' : '';
+  document.getElementById('sortEvent').style.color = mode === 'event' ? 'white' : '';
+  renderHistory();
+}
+
+function renderHistory() {
+  const container = document.getElementById('historyList');
+  const search = (document.getElementById('historySearch')?.value || '').toLowerCase();
+  let history = getHistory();
+
+  // Filter by search
+  if (search) {
+    history = history.filter(h =>
+      (h.clientName || '').toLowerCase().includes(search) ||
+      (h.eventType || '').toLowerCase().includes(search) ||
+      (h.venue || '').toLowerCase().includes(search) ||
+      (h.invoiceNum || '').toLowerCase().includes(search) ||
+      (h.clientEmail || '').toLowerCase().includes(search)
+    );
+  }
+
+  // Sort
+  if (historySortMode === 'event') {
+    history.sort((a, b) => new Date(b.eventDate) - new Date(a.eventDate));
+  } else {
+    history.sort((a, b) => new Date(b._savedAt) - new Date(a._savedAt));
+  }
+
+  if (history.length === 0) {
+    container.innerHTML = '<div class="history-empty">No invoices found</div>';
+    return;
+  }
+
+  container.innerHTML = history.map(h => {
+    const eventDateStr = h.eventDate ? formatDateLong(h.eventDate).replace(/\w+, /, '') : '—';
+    const savedDate = h._savedAt ? new Date(h._savedAt).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) : '—';
+    return `
+      <div class="history-card">
+        <div class="hc-top">
+          <div class="hc-name">${h.clientName || '—'} <span style="font-weight:400;color:var(--muted)">#${h.invoiceNum || '—'}</span></div>
+          <div class="hc-total">${formatCurrency(h.grandTotal || 0)}</div>
+        </div>
+        <div class="hc-meta">${h.eventType || '—'} · ${eventDateStr}</div>
+        <div class="hc-meta">${h.venue || '—'}</div>
+        <div class="hc-meta" style="margin-top:4px;font-size:0.7rem">Saved: ${savedDate}</div>
+        <div class="hc-actions">
+          <button class="hc-load" onclick="loadFromHistory(${h._id})">✏️ Load & Edit</button>
+          <button class="hc-delete" onclick="deleteFromHistory(${h._id})">🗑 Delete</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function loadFromHistory(id) {
+  const history = getHistory();
+  const h = history.find(x => x._id === id);
+  if (!h) { toast('Invoice not found', 'red'); return; }
+
+  // Fill form fields
+  document.getElementById('clientName').value = h.clientName || '';
+  document.getElementById('clientEmail').value = h.clientEmail || '';
+  document.getElementById('eventDate').value = h.eventDate || '';
+  document.getElementById('eventType').value = h.eventType || '';
+  document.getElementById('venue').value = h.venue || '';
+  document.getElementById('guestCount').value = h.guestCount || '';
+  document.getElementById('setupSpace').value = h.setupSpace || 'indoor';
+  document.getElementById('numServers').value = h.numServers || 2;
+  document.getElementById('invoiceNum').value = h.invoiceNum || '';
+  document.getElementById('additionalNotes').value = '';
+
+  // Set times from serviceTimeStr if available
+  if (h.startTime) document.getElementById('startTime').value = h.startTime;
+  if (h.endTime) document.getElementById('endTime').value = h.endTime;
+
+  // Set servings and trigger change
+  document.getElementById('servings').value = h.servings || '';
+  onServingsChange(h.servings || 0);
+
+  // Custom base fee override
+  document.getElementById('customBaseFee').value = h.customBaseFeeOverride || '';
+
+  // Restore mileage
+  window._mileage = h.mileage || 0;
+  if (h.mileage > 0) {
+    document.getElementById('mileageDisplay').textContent = `${h.mileage} mi roundtrip → $${h.mileage.toFixed(2)}`;
+    document.getElementById('mileageResult').style.display = 'block';
+  }
+
+  // Restore custom line items
+  document.getElementById('lineItems').innerHTML = '';
+  lineItemCount = 0;
+  if (h.customItems && h.customItems.length > 0) {
+    h.customItems.forEach(item => addLineItem(item.name, item.qty, item.price));
+  }
+
+  switchTab('form');
+  toast('✅ Invoice loaded — make your edits and regenerate!', 'green');
 }
 
 // ── PARSE INQUIRY ──────────────────────────────────────────────────────────
@@ -1021,8 +1190,14 @@ function generateInvoice() {
     guestCount, setupSpace
   };
 
+  // Save start/end times to invoiceData for history reload
+  invoiceData.startTime = startTime;
+  invoiceData.endTime = endTime;
+  invoiceData.customBaseFeeOverride = document.getElementById('customBaseFee').value || '';
+
   renderPreview(invoiceData);
   updateSummary(invoiceData);
+  saveToHistory({...invoiceData});
   document.getElementById('downloadBtn').disabled = false;
   document.getElementById('sheetsBtn').disabled = false;
   document.getElementById('calBtn').disabled = false;
