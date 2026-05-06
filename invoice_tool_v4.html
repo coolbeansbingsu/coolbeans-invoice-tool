@@ -725,18 +725,7 @@ function updateGratuityHint() {
   // Just a UI hint — actual calc happens on generate
 }
 
-const STARTING_INVOICE = 10658;
-function getNextInvoiceNum() {
-  var current = parseInt(localStorage.getItem('cb_invoice_num') || STARTING_INVOICE);
-  return current;
-}
-function incrementInvoiceNum() {
-  var current = parseInt(localStorage.getItem('cb_invoice_num') || STARTING_INVOICE);
-  localStorage.setItem('cb_invoice_num', current + 1);
-}
-
-// Set invoice number on load
-document.getElementById('invoiceNum').value = getNextInvoiceNum();
+// Invoice number left blank for manual input
 
 // API key watchers + localStorage persistence
 const googleKeyInput = document.getElementById('googleApiKey');
@@ -1037,8 +1026,7 @@ function generateInvoice() {
   document.getElementById('downloadBtn').disabled = false;
   document.getElementById('sheetsBtn').disabled = false;
   document.getElementById('calBtn').disabled = false;
-  incrementInvoiceNum();
-  document.getElementById('invoiceNum').value = getNextInvoiceNum();
+
   switchTab('summary');
   toast('✅ Invoice generated!', 'green');
 }
@@ -1164,7 +1152,7 @@ function downloadPDF() {
   
   var dp = invoiceData.eventDate ? invoiceData.eventDate.split('-') : ['00','00','00'];
   var dateStr = dp[1] + '.' + dp[2] + '.' + dp[0].slice(2);
-  var fileName = invoiceData.clientName + ' ' + dateStr + ' #' + invoiceData.invoiceNum;
+  var fileName = invoiceData.clientName + ' ' + dateStr + ' Cool Beans Bingsu #' + invoiceData.invoiceNum;
 
   const printWindow = window.open('', '_blank');
   const invoiceHTML = document.getElementById('invoice-preview').innerHTML;
