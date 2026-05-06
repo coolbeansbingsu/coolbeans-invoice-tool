@@ -1001,6 +1001,10 @@ function updateSummary(d) {
 function downloadPDF() {
   if (!invoiceData) { toast('Generate an invoice first', 'red'); return; }
   
+  var dp = invoiceData.eventDate ? invoiceData.eventDate.split('-') : ['00','00','00'];
+  var dateStr = dp[1] + '.' + dp[2] + '.' + dp[0].slice(2);
+  var fileName = invoiceData.clientName + ' ' + dateStr + ' #' + invoiceData.invoiceNum;
+
   const printWindow = window.open('', '_blank');
   const invoiceHTML = document.getElementById('invoice-preview').innerHTML;
   
@@ -1008,11 +1012,7 @@ function downloadPDF() {
     <!DOCTYPE html>
     <html>
     <head>
-      <title>${(function() {
-        var dp = invoiceData.eventDate ? invoiceData.eventDate.split('-') : ['','',''];
-        var dateStr = dp[1] + '.' + dp[2] + '.' + dp[0].slice(2);
-        return invoiceData.clientName + ' ' + dateStr + ' #' + invoiceData.invoiceNum;
-      })()}</title>
+      <title>${fileName}</title>
       <style>
         @media print { body { margin: 0; } }
         body { font-family: Helvetica, Arial, sans-serif; margin: 0; padding: 40px; }
