@@ -442,10 +442,47 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  .invoice-num-row {
-    display: flex; gap: 8px; align-items: flex-end;
+  .line-item-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 6px;
   }
-  .invoice-num-row .field-row { flex: 1; margin-bottom: 0; }
+  .line-item-row input {
+    padding: 7px 10px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    font-size: 0.8rem;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    background: var(--white);
+  }
+  .line-item-row input:focus { outline: none; border-color: var(--blue); }
+  .remove-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 4px;
+    border-radius: 4px;
+    line-height: 1;
+  }
+  .remove-btn:hover { color: #c0392b; background: #fee2e2; }
+  .line-item-headers {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    gap: 6px;
+    margin-bottom: 4px;
+  }
+  .line-item-headers span {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
 </style>
 </head>
 <body>
@@ -502,6 +539,18 @@
         </select>
       </div>
       <div class="field-row"><label>Additional Notes</label><textarea id="additionalNotes" placeholder="Any special requests or notes..."></textarea></div>
+
+      <div class="section-label">Staffing</div>
+      <div class="field-row">
+        <label>Number of Servers <span style="font-size:0.7rem;color:var(--muted)">(auto-set: 2 for ≤200 servings)</span></label>
+        <input type="number" id="numServers" value="2" min="1" max="10">
+      </div>
+
+      <div class="section-label">Additional Line Items</div>
+      <div id="lineItems"></div>
+      <button class="btn btn-secondary" onclick="addLineItem()" style="margin-top:6px;width:100%;justify-content:center">
+        + Add Line Item
+      </button>
 
       <div class="section-label">Invoice</div>
       <div class="invoice-num-row">
@@ -598,7 +647,89 @@ logoBase64 = null; // will render text logo as fallback
 // Set today's date
 document.getElementById('dateIssued').value = new Date().toISOString().split('T')[0];
 
-// Auto-incrementing invoice number
+// Auto-set server count based on servings
+document.getElementById('servings').addEventListener('change', function() {
+  const s = parseInt(this.value) || 0;
+  if (s <= 200) document.getElementById('numServers').value = 2;
+});
+
+// ── LINE ITEMS ─────────────────────────────────────────────────────────────
+let lineItemCount = 0;
+
+// Pre-populate with common items
+const PRESET_LINE_ITEMS = [
+  { name: 'Canopy Rental (White, 12\'x12\')', qty: 1, price: 100 },
+];
+
+function addLineItem(name='', qty='', price='') {
+  const container = document.getElementById('lineItems');
+  
+  // Add headers if first item
+  if (lineItemCount === 0) {
+    container.innerHTML = `<div class="line-item-headers">
+      <span>Description</span><span>Qty</span><span>Unit Price</span><span></span>
+    </div>`;
+  }
+
+  const id = lineItemCount++;
+  const div = document.createElement('div');
+  div.className = 'line-item-row';
+  div.id = `li-${id}`;
+  div.innerHTML = `
+    <input type="text" placeholder="e.g. Canopy Rental" value="${name}" id="li-name-${id}">
+    <input type="number" placeholder="1" value="${qty}" min="1" id="li-qty-${id}">
+    <input type="number" placeholder="0.00" value="${price}" step="0.01" id="li-price-${id}">
+    <button class="remove-btn" onclick="removeLineItem(${id})">×</button>
+  `;
+  container.appendChild(div);
+
+  // If "additional server" is added, recalculate gratuity hint
+  document.getElementById(`li-name-${id}`).addEventListener('input', updateGratuityHint);
+  document.getElementById(`li-qty-${id}`).addEventListener('input', updateGratuityHint);
+}
+
+function removeLineItem(id) {
+  const el = document.getElementById(`li-${id}`);
+  if (el) el.remove();
+  lineItemCount--;
+  updateGratuityHint();
+  // Remove headers if no items left
+  const container = document.getElementById('lineItems');
+  if (container.querySelectorAll('.line-item-row').length === 0) {
+    container.innerHTML = '';
+    lineItemCount = 0;
+  }
+}
+
+function getLineItems() {
+  const rows = document.getElementById('lineItems').querySelectorAll('.line-item-row');
+  const items = [];
+  rows.forEach(row => {
+    const id = row.id.replace('li-', '');
+    const name  = document.getElementById(`li-name-${id}`)?.value.trim();
+    const qty   = parseFloat(document.getElementById(`li-qty-${id}`)?.value) || 1;
+    const price = parseFloat(document.getElementById(`li-price-${id}`)?.value) || 0;
+    if (name) items.push({ name, qty, price, total: qty * price });
+  });
+  return items;
+}
+
+function getExtraServers() {
+  // Check if any line item is an additional server
+  const items = getLineItems();
+  let extra = 0;
+  items.forEach(item => {
+    if (item.name.toLowerCase().includes('server')) {
+      extra += item.qty;
+    }
+  });
+  return extra;
+}
+
+function updateGratuityHint() {
+  // Just a UI hint — actual calc happens on generate
+}
+
 const STARTING_INVOICE = 10658;
 function getNextInvoiceNum() {
   var current = parseInt(localStorage.getItem('cb_invoice_num') || STARTING_INVOICE);
@@ -825,6 +956,7 @@ function generateInvoice() {
   const notes        = document.getElementById('additionalNotes').value.trim();
   const invoiceNum   = document.getElementById('invoiceNum').value.trim() || '—';
   const dateIssued   = document.getElementById('dateIssued').value;
+  const numServers   = parseInt(document.getElementById('numServers').value) || 2;
 
   if (!clientName || !eventDate || !servings) {
     toast('Please fill in client name, event date, and servings', 'red');
@@ -852,15 +984,16 @@ function generateInvoice() {
     addTimeTotal = Math.ceil(overHours / 0.5) * 100;
   }
 
-  // Gratuity
-  const gratuityRate = servings < 250 ? 60 : 90; // 2 servers < 250, 3 servers >= 250
+  // Gratuity — servers × $30/hr × service hours
+  const gratuityRate = numServers * 30;
   const gratuityHrs = serviceHours || 0;
   const gratuityTotal = gratuityHrs * gratuityRate;
 
-  // Canopy
-  const canopyNeeded = setupSpace === 'outdoor_canopy';
+  // Custom line items
+  const customItems = getLineItems();
+  const customTotal = customItems.reduce((sum, item) => sum + item.total, 0);
 
-  const grandTotal = (baseFee || 0) + bingsuTotal + mileageTotal + addTimeTotal + gratuityTotal + (canopyNeeded ? 100 : 0);
+  const grandTotal = (baseFee || 0) + bingsuTotal + mileageTotal + addTimeTotal + gratuityTotal + customTotal;
 
   // Payment schedule
   const today = new Date();
@@ -896,7 +1029,9 @@ function generateInvoice() {
     invoiceNum, dateIssued: dateIssued ? formatDateLong(dateIssued).replace(/\w+, /, '') : '—',
     servings, bingsuTotal, baseFee, mileage, mileageTotal,
     addTimeQty, addTimeTotal, gratuityHrs, gratuityTotal, gratuityRate,
-    canopyNeeded, grandTotal, deposit, finalPay, finalDue, daysUntil
+    numServers, customItems, customTotal,
+    grandTotal, deposit, finalPay, finalDue, daysUntil,
+    guestCount, setupSpace
   };
 
   renderPreview(invoiceData);
@@ -917,11 +1052,11 @@ function renderPreview(d) {
 
   const addTimeRow = d.addTimeQty > 0
     ? `<tr><td>Additional Service Time</td><td>$100/0.5 hr</td><td>${d.addTimeQty} hr</td><td>${formatCurrency(d.addTimeTotal)}</td></tr>`
-    : `<tr><td>Additional Service Time</td><td>$100/0.5 hr</td><td>N/A</td><td>—</td></tr>`;
+    : '';
 
-  const canopyRow = d.canopyNeeded
-    ? `<tr><td>Canopy Rental (White, 12'x12')</td><td>$100</td><td>1</td><td>$100.00</td></tr>`
-    : `<tr><td>Canopy Rental (White, 12'x12')</td><td>$100</td><td>N/A</td><td>—</td></tr>`;
+  const customRows = (d.customItems || []).map(item =>
+    `<tr><td>${item.name}</td><td>${formatCurrency(item.price)}</td><td>${item.qty}</td><td>${formatCurrency(item.total)}</td></tr>`
+  ).join('');
 
   const paymentRows = d.finalPay === null
     ? `<tr><td class="sched-label" rowspan="1">Payment Schedule</td><td class="sched-desc">Full Payment (Due At Signing)</td><td class="sched-amt">${formatCurrency(d.deposit)}</td></tr>`
@@ -967,8 +1102,8 @@ function renderPreview(d) {
         <tr><td>Bingsu Servings</td><td>$8.75</td><td>${d.servings}</td><td>${formatCurrency(d.bingsuTotal)}</td></tr>
         <tr><td>Mileage Fee</td><td>$1/mi</td><td>${d.mileage > 0 ? d.mileage + ' mi' : '0'}</td><td>${d.mileage > 0 ? formatCurrency(d.mileageTotal) : '$0.00'}</td></tr>
         ${addTimeRow}
-        <tr><td>Gratuity</td><td>$\${d.gratuityRate}/hr</td><td>${d.gratuityHrs} hrs</td><td>${formatCurrency(d.gratuityTotal)}</td></tr>
-        ${canopyRow}
+        <tr><td>Gratuity (${d.numServers} servers × $30/hr)</td><td>$${d.numServers * 30}/hr</td><td>${d.gratuityHrs} hrs</td><td>${formatCurrency(d.gratuityTotal)}</td></tr>
+        ${customRows}
         <tr class="inv-total-row"><td></td><td></td><td>Total</td><td>${formatCurrency(d.grandTotal)}</td></tr>
       </tbody>
     </table>
@@ -1003,8 +1138,8 @@ function updateSummary(d) {
     [`Bingsu Servings (${d.servings} × $8.75)`, formatCurrency(d.bingsuTotal)],
     [`Mileage (${d.mileage} mi)`, formatCurrency(d.mileageTotal)],
     d.addTimeQty > 0 ? [`Additional Time (${d.addTimeQty} hr)`, formatCurrency(d.addTimeTotal)] : null,
-    [`Gratuity (${d.gratuityHrs} hrs × $${d.gratuityRate}/hr)`, formatCurrency(d.gratuityTotal)],
-    d.canopyNeeded ? ['Canopy Rental', '$100.00'] : null,
+    [`Gratuity (${d.gratuityHrs} hrs × $${d.numServers * 30}/hr)`, formatCurrency(d.gratuityTotal)],
+    ...(d.customItems || []).map(item => [`${item.name} (×${item.qty})`, formatCurrency(item.total)]),
   ].filter(Boolean);
 
   let html = rows.map(([l,v]) => `
@@ -1174,4 +1309,3 @@ function addToCalendar() {
 </script>
 </body>
 </html>
-
