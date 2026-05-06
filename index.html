@@ -525,8 +525,12 @@
         <div class="field-row"><label>Service End Time</label><input type="time" id="endTime"></div>
       </div>
       <div class="two-col">
-        <div class="field-row"><label>Bingsu Servings</label><input type="number" id="servings" placeholder="e.g. 100" min="1"></div>
+        <div class="field-row"><label>Bingsu Servings</label><input type="number" id="servings" placeholder="e.g. 100" min="1" oninput="onServingsChange(this.value)"></div>
         <div class="field-row"><label>Total Guests</label><input type="number" id="guestCount" placeholder="e.g. 100" min="1"></div>
+      </div>
+      <div class="field-row">
+        <label>Base Event Fee Override <span style="font-size:0.7rem;color:var(--muted)">(optional — leave blank to use standard pricing)</span></label>
+        <input type="number" id="customBaseFee" placeholder="e.g. 750.00" min="0" step="0.01">
       </div>
 
       <div class="section-label">Setup</div>
@@ -635,9 +639,13 @@ const logoBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZAAAAAzCAYAAA
 document.getElementById('dateIssued').value = new Date().toISOString().split('T')[0];
 
 // Auto-set server count based on servings
-document.getElementById('servings').addEventListener('change', function() {
-  const s = parseInt(this.value) || 0;
+function onServingsChange(val) {
+  const s = parseInt(val) || 0;
   if (s <= 200) document.getElementById('numServers').value = 2;
+}
+
+document.getElementById('servings').addEventListener('change', function() {
+  onServingsChange(this.value);
 });
 
 // ── LINE ITEMS ─────────────────────────────────────────────────────────────
@@ -813,7 +821,7 @@ async function parseInquiry() {
     if (parsed.venue) document.getElementById('venue').value = parsed.venue;
     if (parsed.startTime) document.getElementById('startTime').value = parsed.startTime;
     if (parsed.endTime) document.getElementById('endTime').value = parsed.endTime;
-    if (parsed.servings) document.getElementById('servings').value = parsed.servings;
+    if (parsed.servings) { document.getElementById('servings').value = parsed.servings; onServingsChange(parsed.servings); }
     if (parsed.guestCount) document.getElementById('guestCount').value = parsed.guestCount;
     if (parsed.setupSpace) document.getElementById('setupSpace').value = parsed.setupSpace;
     if (parsed.additionalNotes) document.getElementById('additionalNotes').value = parsed.additionalNotes;
@@ -897,12 +905,12 @@ async function calculateMileage() {
 
 // ── BUSINESS LOGIC ─────────────────────────────────────────────────────────
 function getBaseFee(servings) {
-  if (servings < 105) return 500;
-  if (servings < 155) return 650;
-  if (servings < 205) return 800;
-  if (servings < 255) return 950;
+  if (servings <= 104) return 500;
+  if (servings <= 154) return 650;
+  if (servings <= 204) return 800;
+  if (servings <= 254) return 950;
   if (servings <= 300) return 1100;
-  return null; // custom
+  return null; // custom — user inputs manually
 }
 
 function getIncludedHours(servings) {
@@ -951,7 +959,9 @@ function generateInvoice() {
   }
 
   // Pricing
-  const baseFee = getBaseFee(servings);
+  const autoBaseFee = getBaseFee(servings);
+  const customBaseFeeInput = parseFloat(document.getElementById('customBaseFee').value) || 0;
+  const baseFee = autoBaseFee !== null ? autoBaseFee : customBaseFeeInput;
   const bingsuTotal = servings * 8.75;
   const mileage = window._mileage || 0;
   const mileageTotal = mileage;
