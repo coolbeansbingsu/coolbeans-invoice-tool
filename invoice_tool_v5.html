@@ -287,10 +287,10 @@
     margin-bottom: 18px;
   }
   .inv-logo { max-width: 220px; max-height: 40px; }
-  .inv-meta { text-align: right; font-size: 9px; line-height: 1.7; color: #555; }
+  .inv-meta { text-align: right; font-size: 9px; line-height: 1.7; color: #333; }
   .inv-meta .meta-row { display: flex; justify-content: flex-end; gap: 6px; }
   .inv-meta .meta-label { font-weight: 700; color: #333; }
-  .inv-meta .meta-contact { color: #777; margin-top: 6px; font-size: 8px; }
+  .inv-meta .meta-contact { color: #222; margin-top: 6px; font-size: 8px; }
 
   .inv-details-grid {
     display: grid;
@@ -312,12 +312,12 @@
     color: #222;
     margin-bottom: 2px;
   }
-  .inv-field { font-size: 9px; line-height: 1.8; color: #555; }
+  .inv-field { font-size: 9px; line-height: 1.8; color: #333; }
 
   .inv-table { width: 100%; border-collapse: collapse; margin-top: 0; font-size: 9px; }
   .inv-table th {
     background: #b7d2e2;
-    color: #1a3a4a;
+    color: #000;
     font-weight: 700;
     text-align: center;
     padding: 7px 10px;
@@ -330,7 +330,7 @@
     border-bottom: 0.5px solid #e0e0e0;
     text-align: center;
     vertical-align: middle;
-    color: #777;
+    color: #222;
     font-size: 9px;
   }
   .inv-table td:first-child { text-align: left; color: #222; }
@@ -338,14 +338,14 @@
 
   .inv-total-row td {
     background: #b7d2e2 !important;
-    color: #1a3a4a;
+    color: #000;
     font-weight: 700;
     font-size: 10px;
     text-align: right;
     padding: 7px 10px;
     border: none;
   }
-  .inv-total-row td:first-child { text-align: right; }
+  .inv-total-row td { text-align: right; }
 
   .inv-payment {
     width: 100%;
@@ -356,7 +356,6 @@
   .inv-payment td {
     padding: 7px 12px;
     border: 0.5px solid #e0e0e0;
-    border-top: none;
     background: white;
     text-align: center;
     vertical-align: middle;
@@ -367,7 +366,7 @@
     font-weight: 700;
     color: #222;
   }
-  .inv-payment .sched-desc { width: 60%; color: #555; }
+  .inv-payment .sched-desc { width: 60%; color: #333; }
   .inv-payment .sched-amt { width: 18%; font-weight: 700; color: #222; }
   .inv-payment .sched-divider td {
     padding: 0;
@@ -377,7 +376,7 @@
 
   .inv-terms {
     font-size: 7.5px;
-    color: #888;
+    color: #333;
     line-height: 1.6;
     margin-top: 16px;
   }
@@ -395,7 +394,7 @@
     margin-bottom: 4px;
     height: 20px;
   }
-  .inv-sig-label { font-size: 8px; font-weight: 700; color: #555; letter-spacing: 0.05em; }
+  .inv-sig-label { font-size: 8px; font-weight: 700; color: #333; letter-spacing: 0.05em; }
 
   /* EMPTY STATE */
   .empty-state {
@@ -586,6 +585,21 @@
       <div class="mileage-result" id="mileageResult">
         <div class="mi" id="mileageDisplay">—</div>
         <div class="depart" id="departDisplay">—</div>
+      </div>
+      <div class="field-row" style="margin-top:8px">
+        <label>Mileage Cost Override <span style="font-size:0.7rem;color:var(--muted)">(optional — leave blank to use calculated amount)</span></label>
+        <input type="number" id="mileageOverride" placeholder="e.g. 45.00" min="0" step="0.01">
+      </div>
+
+      <div class="section-label">Payment Schedule Override</div>
+      <p style="font-size:0.75rem;color:var(--muted);margin-bottom:8px">Leave blank to use auto-calculated 50/50 split. Fill in to override (e.g. if deposit already paid and balance changed).</p>
+      <div class="two-col">
+        <div class="field-row"><label>Deposit Amount ($)</label><input type="number" id="depositOverride" placeholder="e.g. 500.00" min="0" step="0.01"></div>
+        <div class="field-row"><label>Remaining Balance ($)</label><input type="number" id="finalPayOverride" placeholder="e.g. 300.00" min="0" step="0.01"></div>
+      </div>
+      <div class="field-row">
+        <label>Final Payment Due Date</label>
+        <input type="date" id="finalDueOverride">
       </div>
 
       <button class="btn btn-primary" onclick="generateInvoice()" id="generateBtn">
@@ -952,6 +966,12 @@ function loadFromHistory(id) {
     h.customItems.forEach(item => addLineItem(item.name, item.qty, item.price));
   }
 
+  // Clear overrides on load
+  document.getElementById('mileageOverride').value = '';
+  document.getElementById('depositOverride').value = '';
+  document.getElementById('finalPayOverride').value = '';
+  document.getElementById('finalDueOverride').value = '';
+
   switchTab('form');
   toast('✅ Invoice loaded — make your edits and regenerate!', 'green');
 }
@@ -1128,7 +1148,8 @@ function generateInvoice() {
   const bingsuUnitPrice = servings <= 104 ? 8.75 : 8.50;
   const bingsuTotal = servings * bingsuUnitPrice;
   const mileage = window._mileage || 0;
-  const mileageTotal = mileage;
+  const mileageOverride = parseFloat(document.getElementById('mileageOverride').value);
+  const mileageTotal = !isNaN(mileageOverride) && mileageOverride >= 0 ? mileageOverride : mileage;
 
   // Service hours & additional time
   let serviceHours = 0;
@@ -1156,12 +1177,27 @@ function generateInvoice() {
 
   const grandTotal = (baseFee || 0) + bingsuTotal + mileageTotal + addTimeTotal + gratuityTotal + customTotal;
 
-  // Payment schedule
+  // Payment schedule — use overrides if provided
+  const depositOverride = parseFloat(document.getElementById('depositOverride').value);
+  const finalPayOverride = parseFloat(document.getElementById('finalPayOverride').value);
+  const finalDueOverrideVal = document.getElementById('finalDueOverride').value;
+
   const today = new Date();
   const eventDt = new Date(eventDate + 'T12:00:00');
   const daysUntil = Math.floor((eventDt - today) / 86400000);
   let deposit, finalPay, finalDue;
-  if (daysUntil <= 14) {
+
+  if (!isNaN(depositOverride) || !isNaN(finalPayOverride)) {
+    // Manual override
+    deposit = !isNaN(depositOverride) ? depositOverride : grandTotal;
+    finalPay = !isNaN(finalPayOverride) ? (finalPayOverride === 0 ? null : finalPayOverride) : null;
+    if (finalDueOverrideVal) {
+      const d = new Date(finalDueOverrideVal + 'T12:00:00');
+      finalDue = `${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getDate().toString().padStart(2,'0')}/${d.getFullYear().toString().slice(2)}`;
+    } else {
+      finalDue = null;
+    }
+  } else if (daysUntil <= 14) {
     deposit = grandTotal; finalPay = null; finalDue = null;
   } else {
     deposit = grandTotal / 2;
@@ -1343,36 +1379,38 @@ function downloadPDF() {
     <head>
       <title>${fileName}</title>
       <style>
-        @media print { body { margin: 0; } }
+        @media print { 
+          body { margin: 0; }
+          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
         body { font-family: Helvetica, Arial, sans-serif; margin: 0; padding: 54px 47px; }
         .inv-header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 14px; border-bottom: 2px solid #b7d2e2; margin-bottom: 18px; }
         .inv-logo { max-width: 220px; max-height: 40px; }
-        .inv-meta { text-align: right; font-size: 9px; line-height: 1.7; color: #555; }
+        .inv-meta { text-align: right; font-size: 9px; line-height: 1.7; color: #222; }
         .inv-meta .meta-row { display: flex; justify-content: flex-end; gap: 6px; }
-        .inv-meta .meta-label { font-weight: 700; color: #333; }
-        .inv-meta .meta-contact { color: #777; margin-top: 6px; font-size: 8px; }
+        .inv-meta .meta-label { font-weight: 700; color: #000; }
+        .inv-meta .meta-contact { color: #222; margin-top: 6px; font-size: 8px; }
         .inv-details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
         .inv-details-label { font-size: 9px; font-weight: 700; color: #7aabcc; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 5px; }
-        .inv-details-title { font-size: 10px; font-weight: 700; color: #222; margin-bottom: 2px; }
-        .inv-field { font-size: 9px; line-height: 1.8; color: #555; }
+        .inv-details-title { font-size: 10px; font-weight: 700; color: #000; margin-bottom: 2px; }
+        .inv-field { font-size: 9px; line-height: 1.8; color: #222; }
         .inv-table { width: 100%; border-collapse: collapse; }
-        .inv-table th { background: #b7d2e2; color: #1a3a4a; font-weight: 700; text-align: center; padding: 7px 10px; font-size: 9px; letter-spacing: 0.04em; }
+        .inv-table th { background: #b7d2e2 !important; color: #000 !important; font-weight: 700; text-align: center; padding: 7px 10px; font-size: 9px; letter-spacing: 0.04em; }
         .inv-table th:first-child { text-align: left; }
-        .inv-table td { padding: 7px 10px; border-bottom: 0.5px solid #e0e0e0; text-align: center; vertical-align: middle; color: #777; font-size: 9px; }
-        .inv-table td:first-child { text-align: left; color: #222; }
-        .inv-table td:last-child { text-align: right; color: #222; }
-        .inv-total-row td { background: #b7d2e2 !important; color: #1a3a4a; font-weight: 700; font-size: 10px; text-align: right; padding: 7px 10px; border: none; }
-        .inv-total-row td:first-child { text-align: right; }
-        .inv-payment { width: 100%; border-collapse: collapse; font-size: 9px; }
-        .inv-payment td { padding: 7px 12px; border: 0.5px solid #e0e0e0; border-top: none; background: white; text-align: center; vertical-align: middle; }
-        .inv-payment .sched-label { width: 22%; border-right: 0.5px solid #e0e0e0; font-weight: 700; color: #222; }
-        .inv-payment .sched-desc { width: 60%; color: #555; }
-        .inv-payment .sched-amt { width: 18%; font-weight: 700; color: #222; }
-        .inv-terms { font-size: 7.5px; color: #888; line-height: 1.6; margin-top: 16px; }
+        .inv-table td { padding: 7px 10px; border-bottom: 0.5px solid #e0e0e0; text-align: center; vertical-align: middle; color: #222; font-size: 9px; }
+        .inv-table td:first-child { text-align: left; color: #000; }
+        .inv-table td:last-child { text-align: right; color: #000; }
+        .inv-total-row td { background: #b7d2e2 !important; color: #000 !important; font-weight: 700; font-size: 10px; text-align: right !important; padding: 7px 10px; border: none; }
+        .inv-payment { width: 100%; border-collapse: collapse; font-size: 9px; margin-top: 0; }
+        .inv-payment td { padding: 7px 12px; border: 0.5px solid #e0e0e0; background: white; text-align: center; vertical-align: middle; }
+        .inv-payment .sched-label { width: 22%; border-right: 0.5px solid #e0e0e0; font-weight: 700; color: #000; }
+        .inv-payment .sched-desc { width: 60%; color: #222; }
+        .inv-payment .sched-amt { width: 18%; font-weight: 700; color: #000; }
+        .inv-terms { font-size: 7.5px; color: #333; line-height: 1.6; margin-top: 16px; }
         .inv-sig { display: flex; justify-content: space-between; margin-top: 28px; gap: 40px; }
         .inv-sig-block { flex: 1; }
         .inv-sig-line { border-bottom: 0.5px solid #ccc; margin-bottom: 4px; height: 20px; }
-        .inv-sig-label { font-size: 8px; font-weight: 700; color: #555; letter-spacing: 0.05em; }
+        .inv-sig-label { font-size: 8px; font-weight: 700; color: #000; letter-spacing: 0.05em; }
       </style>
     </head>
     <body>${invoiceHTML}</body>
