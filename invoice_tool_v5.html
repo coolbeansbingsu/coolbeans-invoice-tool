@@ -345,7 +345,6 @@
     padding: 7px 10px;
     border: none;
   }
-  .inv-total-row td { text-align: right; }
 
   .inv-payment {
     width: 100%;
@@ -1306,7 +1305,7 @@ function renderPreview(d) {
         ${addTimeRow}
         <tr><td>Gratuity (${d.numServers} servers × $30/hr)</td><td>$${d.numServers * 30}/hr</td><td>${d.gratuityHrs} hrs</td><td>${formatCurrency(d.gratuityTotal)}</td></tr>
         ${customRows}
-        <tr class="inv-total-row"><td></td><td></td><td>Total</td><td>${formatCurrency(d.grandTotal)}</td></tr>
+        <tr class="inv-total-row"><td colspan="3" style="text-align:right;padding-right:10px">Total</td><td>${formatCurrency(d.grandTotal)}</td></tr>
       </tbody>
     </table>
 
