@@ -691,7 +691,9 @@ document.getElementById('dateIssued').value = new Date().toISOString().split('T'
 // Auto-set server count based on servings
 function onServingsChange(val) {
   const s = parseInt(val) || 0;
-  if (s <= 200) document.getElementById('numServers').value = 2;
+  if (s <= 204) document.getElementById('numServers').value = 2;
+  else if (s <= 254) document.getElementById('numServers').value = 3;
+  else if (s <= 300) document.getElementById('numServers').value = 4;
 }
 
 document.getElementById('servings').addEventListener('change', function() {
@@ -1102,8 +1104,12 @@ function getBaseFee(servings) {
 }
 
 function getIncludedHours(servings) {
-  if (servings < 105) return 1.5;
-  if (servings <= 150) return 2.0;
+  if (servings <= 104) return 1.5;
+  if (servings <= 154) return 2.0;
+  if (servings <= 174) return 2.25;
+  if (servings <= 204) return 2.5;
+  if (servings <= 254) return 2.0;
+  if (servings <= 300) return 2.0;
   return null; // varies
 }
 
