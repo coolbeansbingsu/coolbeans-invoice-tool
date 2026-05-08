@@ -564,6 +564,10 @@
         <label>Number of Servers <span style="font-size:0.7rem;color:var(--muted)">(auto-set: 2 for ≤200 servings)</span></label>
         <input type="number" id="numServers" value="2" min="1" max="10">
       </div>
+      <div class="field-row">
+        <label>Additional Service Time <span style="font-size:0.7rem;color:var(--muted)">(extra hrs beyond package, $100/0.5 hr — leave blank if none)</span></label>
+        <input type="number" id="addServiceHours" placeholder="e.g. 0.5" min="0" step="0.5">
+      </div>
 
       <div class="section-label">Additional Line Items</div>
       <div id="lineItems"></div>
@@ -965,6 +969,8 @@ function loadFromHistory(id) {
     h.customItems.forEach(item => addLineItem(item.name, item.qty, item.price));
   }
 
+  document.getElementById('addServiceHours').value = h.addTimeQty || '';
+
   // Clear overrides on load
   document.getElementById('mileageOverride').value = '';
   document.getElementById('depositOverride').value = '';
@@ -1159,15 +1165,24 @@ function generateInvoice() {
     serviceHours = (eh * 60 + em - sh * 60 - sm) / 60;
   }
   const includedHours = getIncludedHours(servings);
+  // Auto-calculate overage from start/end times
   if (includedHours && serviceHours > includedHours) {
     const overHours = serviceHours - includedHours;
-    addTimeQty = overHours;
-    addTimeTotal = Math.ceil(overHours / 0.5) * 100;
+    addTimeQty += overHours;
+    addTimeTotal += Math.ceil(overHours / 0.5) * 100;
   }
+  // Add manual extra hours on top
+  const manualAddHours = parseFloat(document.getElementById('addServiceHours').value);
+  if (!isNaN(manualAddHours) && manualAddHours > 0) {
+    addTimeQty += manualAddHours;
+    addTimeTotal += Math.ceil(manualAddHours / 0.5) * 100;
+  }
+  // Total service hours = included hours (or actual) + additional
+  const totalServiceHours = (serviceHours || includedHours || 0) + ((!isNaN(manualAddHours) && manualAddHours > 0) ? manualAddHours : 0);
 
-  // Gratuity — servers × $30/hr × service hours
+  // Gratuity — servers × $30/hr × total service hours (included + additional)
   const gratuityRate = numServers * 30;
-  const gratuityHrs = serviceHours || 0;
+  const gratuityHrs = totalServiceHours;
   const gratuityTotal = gratuityHrs * gratuityRate;
 
   // Custom line items
