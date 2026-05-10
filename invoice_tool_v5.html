@@ -1246,7 +1246,7 @@ function generateInvoice() {
     clientName, clientEmail, eventDate, eventType, venue,
     serviceTimeStr, packageNotes: packageNotes.join('. '),
     invoiceNum, dateIssued: dateIssued ? formatDateLong(dateIssued).replace(/\w+, /, '') : '—',
-    servings, bingsuUnitPrice, bingsuTotal, baseFee, mileage, mileageTotal,
+    servings, bingsuUnitPrice, bingsuTotal, baseFee, mileage, mileageTotal, omitMileage,
     addTimeQty, addTimeTotal, gratuityHrs, gratuityTotal, gratuityRate,
     numServers, customItems, customTotal,
     grandTotal, deposit, finalPay, finalDue, daysUntil,
@@ -1324,7 +1324,7 @@ function renderPreview(d) {
       <tbody>
         <tr><td>Base Event Fee</td><td>${formatCurrency(d.baseFee || 0)}</td><td>1</td><td>${formatCurrency(d.baseFee || 0)}</td></tr>
         <tr><td>Bingsu Servings</td><td>${formatCurrency(d.bingsuUnitPrice)}</td><td>${d.servings}</td><td>${formatCurrency(d.bingsuTotal)}</td></tr>
-        <tr><td>Mileage Fee</td><td>$1/mi</td><td>${d.mileage > 0 ? d.mileage + ' mi' : '0'}</td><td>${d.mileage > 0 ? formatCurrency(d.mileageTotal) : '$0.00'}</td></tr>
+        ${d.omitMileage ? '' : `<tr><td>Mileage Fee</td><td>$1/mi</td><td>${d.mileage > 0 ? d.mileage + ' mi' : '0'}</td><td>${d.mileage > 0 ? formatCurrency(d.mileageTotal) : '$0.00'}</td></tr>`}
         ${addTimeRow}
         <tr><td>Gratuity (${d.numServers} servers × $30/hr)</td><td>$${d.numServers * 30}/hr</td><td>${d.gratuityHrs} hrs</td><td>${formatCurrency(d.gratuityTotal)}</td></tr>
         ${customRows}
@@ -1360,7 +1360,7 @@ function updateSummary(d) {
   const rows = [
     ['Base Event Fee', formatCurrency(d.baseFee || 0)],
     [`Bingsu Servings (${d.servings} × $${d.bingsuUnitPrice})`, formatCurrency(d.bingsuTotal)],
-    [`Mileage (${d.mileage} mi)`, formatCurrency(d.mileageTotal)],
+    d.omitMileage ? null : [`Mileage (${d.mileage} mi)`, formatCurrency(d.mileageTotal)],
     d.addTimeQty > 0 ? [`Additional Time (${d.addTimeQty} hr)`, formatCurrency(d.addTimeTotal)] : null,
     [`Gratuity (${d.gratuityHrs} hrs × $${d.numServers * 30}/hr)`, formatCurrency(d.gratuityTotal)],
     ...(d.customItems || []).map(item => [`${item.name} (×${item.qty})`, formatCurrency(item.total)]),
