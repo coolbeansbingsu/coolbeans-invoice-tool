@@ -442,10 +442,30 @@
 
   .line-item-row {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr auto;
+    grid-template-columns: 20px 2fr 1fr 1fr auto;
     gap: 6px;
     align-items: center;
     margin-bottom: 6px;
+  }
+  .line-item-headers {
+    display: grid;
+    grid-template-columns: 20px 2fr 1fr 1fr auto;
+    gap: 6px;
+    margin-bottom: 4px;
+  }
+  .drag-handle {
+    cursor: grab;
+    color: var(--muted);
+    font-size: 1rem;
+    text-align: center;
+    user-select: none;
+    padding: 2px;
+  }
+  .drag-handle:active { cursor: grabbing; }
+  .line-item-row.dragging {
+    opacity: 0.4;
+    border: 1px dashed var(--blue);
+    border-radius: 7px;
   }
   .line-item-row input {
     padding: 7px 10px;
@@ -468,12 +488,6 @@
     line-height: 1;
   }
   .remove-btn:hover { color: #c0392b; background: #fee2e2; }
-  .line-item-headers {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr auto;
-    gap: 6px;
-    margin-bottom: 4px;
-  }
   .line-item-headers span {
     font-size: 0.7rem;
     font-weight: 600;
@@ -542,6 +556,10 @@
       <div class="two-col">
         <div class="field-row"><label>Bingsu Servings</label><input type="number" id="servings" placeholder="e.g. 100" min="1" oninput="onServingsChange(this.value)"></div>
         <div class="field-row"><label>Total Guests</label><input type="number" id="guestCount" placeholder="e.g. 100" min="1" oninput="updatePackageNotesPreview()"></div>
+      </div>
+      <div class="field-row">
+        <label>Price Per Bowl Override <span style="font-size:0.7rem;color:var(--muted)">(optional — leave blank to use $8.75 or $8.50 auto-rule)</span></label>
+        <input type="number" id="pricePerBowlOverride" placeholder="e.g. 8.75" min="0" step="0.01">
       </div>
       <div class="field-row">
         <label>Base Event Fee Override <span style="font-size:0.7rem;color:var(--muted)">(optional — leave blank to use standard pricing)</span></label>
@@ -734,7 +752,7 @@ function addLineItem(name='', qty='', price='') {
   // Add headers if first item
   if (lineItemCount === 0) {
     container.innerHTML = `<div class="line-item-headers">
-      <span>Description</span><span>Qty</span><span>Unit Price</span><span></span>
+      <span></span><span>Description</span><span>Qty</span><span>Unit Price</span><span></span>
     </div>`;
   }
 
@@ -743,12 +761,36 @@ function addLineItem(name='', qty='', price='') {
   div.className = 'line-item-row';
   div.id = `li-${id}`;
   div.innerHTML = `
+    <span class="drag-handle" draggable="true" title="Drag to reorder">⠿</span>
     <input type="text" placeholder="e.g. Canopy Rental" value="${name}" id="li-name-${id}">
     <input type="number" placeholder="1" value="${qty}" min="1" id="li-qty-${id}">
     <input type="number" placeholder="0.00" value="${price}" step="0.01" id="li-price-${id}">
     <button class="remove-btn" onclick="removeLineItem(${id})">×</button>
   `;
   container.appendChild(div);
+
+  // Drag and drop
+  const handle = div.querySelector('.drag-handle');
+  handle.addEventListener('dragstart', (e) => {
+    e.dataTransfer.effectAllowed = 'move';
+    div.classList.add('dragging');
+    e.dataTransfer.setData('text/plain', div.id);
+  });
+  handle.addEventListener('dragend', () => div.classList.remove('dragging'));
+
+  div.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    const dragging = document.querySelector('.dragging');
+    if (dragging && dragging !== div) {
+      const rect = div.getBoundingClientRect();
+      const mid = rect.top + rect.height / 2;
+      if (e.clientY < mid) {
+        container.insertBefore(dragging, div);
+      } else {
+        container.insertBefore(dragging, div.nextSibling);
+      }
+    }
+  });
 
   // If "additional server" is added, recalculate gratuity hint
   document.getElementById(`li-name-${id}`).addEventListener('input', updateGratuityHint);
@@ -991,6 +1033,7 @@ function loadFromHistory(id) {
     h.customItems.forEach(item => addLineItem(item.name, item.qty, item.price));
   }
 
+  document.getElementById('pricePerBowlOverride').value = h.bingsuUnitPrice !== (h.servings <= 104 ? 8.75 : 8.50) ? h.bingsuUnitPrice : '';
   document.getElementById('addServiceHours').value = h.addTimeQty || '';
 
   document.getElementById('packageNotesOverride').value = h.packageNotes || '';
@@ -1179,7 +1222,9 @@ function generateInvoice() {
   const autoBaseFee = getBaseFee(servings);
   const customBaseFeeInput = parseFloat(document.getElementById('customBaseFee').value) || 0;
   const baseFee = autoBaseFee !== null ? autoBaseFee : customBaseFeeInput;
-  const bingsuUnitPrice = servings <= 104 ? 8.75 : 8.50;
+  const autoBingsuPrice = servings <= 104 ? 8.75 : 8.50;
+  const pricePerBowlOverride = parseFloat(document.getElementById('pricePerBowlOverride').value);
+  const bingsuUnitPrice = (!isNaN(pricePerBowlOverride) && pricePerBowlOverride > 0) ? pricePerBowlOverride : autoBingsuPrice;
   const bingsuTotal = servings * bingsuUnitPrice;
   const mileage = window._mileage || 0;
   const omitMileage = document.getElementById('omitMileage').checked;
