@@ -1512,10 +1512,15 @@ function downloadPDF() {
   
   printWindow.document.close();
   printWindow.focus();
+  printWindow.onload = function() {
+    setTimeout(() => {
+      printWindow.print();
+    }, 300);
+  };
+  // Fallback in case onload already fired
   setTimeout(() => {
-    printWindow.print();
-    printWindow.close();
-  }, 500);
+    if (!printWindow.closed) printWindow.print();
+  }, 1500);
 }
 
 // ── GOOGLE SHEETS ─────────────────────────────────────────────────────────
