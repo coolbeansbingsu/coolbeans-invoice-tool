@@ -430,6 +430,9 @@
   .toast.green { background: var(--green); }
   .toast.red { background: var(--red); }
 
+  @media screen {
+    #print-container { display: none; }
+  }
   @media print {
     body * { visibility: hidden; }
     #print-container, #print-container * { visibility: visible; }
@@ -1514,6 +1517,8 @@ function downloadPDF() {
   printDiv.innerHTML = invoiceHTML;
   document.title = fileName;
   window.print();
+  // Clean up after print
+  setTimeout(() => { printDiv.innerHTML = ''; }, 1000);
 }
 
 // ── GOOGLE SHEETS ─────────────────────────────────────────────────────────
