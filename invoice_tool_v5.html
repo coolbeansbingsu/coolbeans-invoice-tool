@@ -1152,13 +1152,12 @@ async function calculateMileage() {
     // Calculate arrival time = start time - 1 hour
     let arrivalTimestamp = null;
     if (eventDate && startTime) {
-      const [h, m] = startTime.split(':').map(Number);
       const dt = new Date(`${eventDate}T${startTime}:00`);
-      dt.setHours(dt.getHours() - 1); // arrive 1 hour before
+      dt.setHours(dt.getHours() - 1);
       arrivalTimestamp = Math.floor(dt.getTime() / 1000);
     }
 
-    // One-way distance using Directions API
+    // Directions API via corsproxy.io
     let url = `https://maps.googleapis.com/maps/api/directions/json?origin=${encodeURIComponent(ORIGIN)}&destination=${encodeURIComponent(venue)}&avoid=tolls&key=${apiKey}`;
     if (arrivalTimestamp) url += `&arrival_time=${arrivalTimestamp}`;
 
@@ -1176,22 +1175,20 @@ async function calculateMileage() {
     if (leg.departure_time) {
       departText = `Depart by: ${leg.departure_time.text}`;
     } else if (eventDate && startTime) {
-      const dur = leg.duration.value; // seconds
-      const [h, m] = startTime.split(':').map(Number);
+      const dur = leg.duration.value;
       const arrival = new Date(`${eventDate}T${startTime}:00`);
       arrival.setHours(arrival.getHours() - 1);
       const depart = new Date(arrival.getTime() - dur * 1000);
-      departText = `Depart by: ${depart.toLocaleTimeString('en-US', {hour:'numeric',minute:'2-digit'})}`;
+      departText = `Depart by: ${depart.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'})}`;
     }
 
     document.getElementById('mileageDisplay').textContent = `${roundTrip} mi roundtrip → $${parseFloat(roundTrip).toFixed(2)}`;
     document.getElementById('departDisplay').textContent = departText || 'Add event date & time for departure estimate';
     document.getElementById('mileageResult').style.display = 'block';
 
-    // Store for invoice
     window._mileage = parseFloat(roundTrip);
-
     toast(`✅ ${roundTrip} mi roundtrip`, 'green');
+
   } catch(e) {
     toast('Mileage calculation failed — check API key & venue', 'red');
     console.error(e);
