@@ -1150,35 +1150,53 @@ async function calculateMileage() {
 
   try {
     // Calculate arrival time = start time - 1 hour
-    let arrivalTimestamp = null;
+    let arrivalTime = null;
     if (eventDate && startTime) {
       const dt = new Date(`${eventDate}T${startTime}:00`);
       dt.setHours(dt.getHours() - 1);
-      arrivalTimestamp = Math.floor(dt.getTime() / 1000);
+      arrivalTime = dt.toISOString();
     }
 
-    // Directions API via corsproxy.io
-    let url = `https://maps.googleapis.com/maps/api/directions/json?origin=${encodeURIComponent(ORIGIN)}&destination=${encodeURIComponent(venue)}&avoid=tolls&key=${apiKey}`;
-    if (arrivalTimestamp) url += `&arrival_time=${arrivalTimestamp}`;
+    // Routes API — direct call (no proxy needed)
+    const body = {
+      origin: { address: ORIGIN },
+      destination: { address: venue },
+      travelMode: 'DRIVE',
+      routingPreference: 'TRAFFIC_AWARE',
+      routeModifiers: { avoidTolls: true },
+      computeAlternativeRoutes: false,
+      languageCode: 'en-US',
+      units: 'IMPERIAL'
+    };
+    if (arrivalTime) body.arrivalTime = arrivalTime;
 
-    const resp = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`);
+    const resp = await fetch('https://routes.googleapis.com/directions/v2:computeRoutes', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': apiKey,
+        'X-Goog-FieldMask': 'routes.distanceMeters,routes.duration,routes.staticDuration'
+      },
+      body: JSON.stringify(body)
+    });
+
     const data = await resp.json();
+    if (!data.routes || data.routes.length === 0) {
+      throw new Error(data.error?.message || 'No routes found');
+    }
 
-    if (data.status !== 'OK') throw new Error(data.status);
-
-    const leg = data.routes[0].legs[0];
-    const oneWayMiles = (leg.distance.value / 1609.34).toFixed(1);
-    const roundTrip = (oneWayMiles * 2).toFixed(1);
+    const route = data.routes[0];
+    const oneWayMiles = (route.distanceMeters / 1609.34).toFixed(1);
+    const roundTrip = (parseFloat(oneWayMiles) * 2).toFixed(1);
 
     // Departure time
     let departText = '';
-    if (leg.departure_time) {
-      departText = `Depart by: ${leg.departure_time.text}`;
-    } else if (eventDate && startTime) {
-      const dur = leg.duration.value;
+    if (eventDate && startTime) {
+      const durStr = route.duration || route.staticDuration || '0s';
+      const durationSecs = parseInt(durStr.replace('s', '')) || 0;
       const arrival = new Date(`${eventDate}T${startTime}:00`);
       arrival.setHours(arrival.getHours() - 1);
-      const depart = new Date(arrival.getTime() - dur * 1000);
+      const depart = new Date(arrival.getTime() - durationSecs * 1000);
       departText = `Depart by: ${depart.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'})}`;
     }
 
@@ -1190,7 +1208,7 @@ async function calculateMileage() {
     toast(`✅ ${roundTrip} mi roundtrip`, 'green');
 
   } catch(e) {
-    toast('Mileage calculation failed — check API key & venue', 'red');
+    toast(`Mileage failed: ${e.message}`, 'red');
     console.error(e);
   } finally {
     btn.disabled = false;
