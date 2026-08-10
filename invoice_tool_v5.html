@@ -1277,8 +1277,8 @@ function generateInvoice() {
 
   // Pricing
   const autoBaseFee = getBaseFee(servings);
-  const customBaseFeeInput = parseFloat(document.getElementById('customBaseFee').value) || 0;
-  const baseFee = autoBaseFee !== null ? autoBaseFee : customBaseFeeInput;
+  const customBaseFeeInput = parseFloat(document.getElementById('customBaseFee').value);
+  const baseFee = (!isNaN(customBaseFeeInput) && customBaseFeeInput > 0) ? customBaseFeeInput : (autoBaseFee || 0);
   const autoBingsuPrice = servings <= 104 ? 8.75 : 8.50;
   const pricePerBowlOverride = parseFloat(document.getElementById('pricePerBowlOverride').value);
   const bingsuUnitPrice = (!isNaN(pricePerBowlOverride) && pricePerBowlOverride > 0) ? pricePerBowlOverride : autoBingsuPrice;
