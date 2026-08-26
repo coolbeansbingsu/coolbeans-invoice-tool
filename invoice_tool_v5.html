@@ -30,7 +30,6 @@
     display: flex;
     flex-direction: column;
   }
-
   /* HEADER */
   header {
     background: var(--white);
@@ -73,14 +72,12 @@
   }
   .api-status.ok { background: #d1fae5; color: var(--green); }
   .api-status.missing { background: #fee2e2; color: var(--red); }
-
   /* MAIN LAYOUT */
   .main {
     display: flex;
     flex: 1;
     overflow: hidden;
   }
-
   /* LEFT PANEL */
   .left-panel {
     width: 420px;
@@ -93,7 +90,6 @@
   }
   .left-panel::-webkit-scrollbar { width: 5px; }
   .left-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
-
   .panel-tabs {
     display: flex;
     border-bottom: 1px solid var(--border);
@@ -113,10 +109,8 @@
     transition: all 0.15s;
   }
   .tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); }
-
   .tab-content { display: none; padding: 20px; flex: 1; }
   .tab-content.active { display: block; }
-
   .section-label {
     font-size: 0.7rem;
     font-weight: 600;
@@ -127,7 +121,6 @@
     margin-top: 18px;
   }
   .section-label:first-child { margin-top: 0; }
-
   .field-row { margin-bottom: 10px; }
   .field-row label {
     display: block;
@@ -151,9 +144,7 @@
     outline: none; border-color: var(--blue);
   }
   .field-row textarea { resize: vertical; min-height: 60px; }
-
   .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-
   .paste-area {
     width: 100%;
     padding: 10px 12px;
@@ -167,7 +158,6 @@
     resize: vertical;
   }
   .paste-area:focus { outline: none; border-color: var(--blue-dark); }
-
   .calc-row {
     display: flex;
     align-items: center;
@@ -182,7 +172,6 @@
   .calc-row .value { font-weight: 600; color: var(--text); }
   .calc-row.total { background: var(--blue); color: white; }
   .calc-row.total .label, .calc-row.total .value { color: white; }
-
   /* BUTTONS */
   .btn {
     padding: 10px 20px;
@@ -216,7 +205,6 @@
   .btn-outline { background: white; color: var(--blue); border: 1px solid var(--blue); width: 100%; justify-content: center; margin-top: 6px; }
   .btn-outline:hover { background: var(--blue-light); }
   .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
   .mileage-result {
     background: var(--blue-light);
     border: 1px solid var(--border);
@@ -228,7 +216,6 @@
   }
   .mileage-result .mi { font-weight: 700; color: var(--blue-dark); font-size: 1rem; }
   .mileage-result .depart { color: var(--muted); margin-top: 3px; }
-
   /* RIGHT PANEL - PDF PREVIEW */
   .right-panel {
     flex: 1;
@@ -264,7 +251,6 @@
   }
   .preview-frame::-webkit-scrollbar { width: 6px; height: 6px; }
   .preview-frame::-webkit-scrollbar-thumb { background: #c0cad6; border-radius: 10px; }
-
   #invoice-preview {
     background: white;
     width: 816px;
@@ -276,7 +262,6 @@
     font-family: Helvetica, Arial, sans-serif;
     flex-shrink: 0;
   }
-
   /* INVOICE STYLES */
   .inv-header {
     display: flex;
@@ -291,7 +276,6 @@
   .inv-meta .meta-row { display: flex; justify-content: flex-end; gap: 6px; }
   .inv-meta .meta-label { font-weight: 700; color: #333; }
   .inv-meta .meta-contact { color: #222; margin-top: 6px; font-size: 8px; }
-
   .inv-details-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -313,7 +297,6 @@
     margin-bottom: 2px;
   }
   .inv-field { font-size: 9px; line-height: 1.8; color: #333; }
-
   .inv-table { width: 100%; border-collapse: collapse; margin-top: 0; font-size: 9px; }
   .inv-table th {
     background: #b7d2e2;
@@ -335,7 +318,6 @@
   }
   .inv-table td:first-child { text-align: left; color: #222; }
   .inv-table td:last-child { text-align: right; color: #222; }
-
   .inv-total-row td {
     background: #b7d2e2 !important;
     color: #000;
@@ -345,7 +327,6 @@
     padding: 7px 10px;
     border: none;
   }
-
   .inv-payment {
     width: 100%;
     border-collapse: collapse;
@@ -372,7 +353,6 @@
     border-top: 0.5px solid #e0e0e0;
     height: 0;
   }
-
   .inv-terms {
     font-size: 7.5px;
     color: #333;
@@ -380,7 +360,6 @@
     margin-top: 16px;
   }
   .inv-terms b { font-weight: 400; }
-
   .inv-sig {
     display: flex;
     justify-content: space-between;
@@ -394,7 +373,6 @@
     height: 20px;
   }
   .inv-sig-label { font-size: 8px; font-weight: 700; color: #333; letter-spacing: 0.05em; }
-
   /* EMPTY STATE */
   .empty-state {
     display: flex;
@@ -408,7 +386,6 @@
   }
   .empty-state .icon { font-size: 3rem; opacity: 0.3; }
   .empty-state p { font-size: 0.85rem; }
-
   /* TOAST */
   .toast {
     position: fixed;
@@ -429,7 +406,6 @@
   .toast.show { opacity: 1; transform: translateY(0); }
   .toast.green { background: var(--green); }
   .toast.red { background: var(--red); }
-
   @media screen {
     #print-container { display: none; }
   }
@@ -481,7 +457,6 @@
     display: none;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
-
   .line-item-row {
     display: grid;
     grid-template-columns: 20px 2fr 1fr 1fr auto;
@@ -556,7 +531,6 @@
 </style>
 </head>
 <body>
-
 <header>
   <h1>Cool Beans <span>Bingsu</span> — Invoice Tool</h1>
   <div class="api-bar">
@@ -568,7 +542,6 @@
     <span class="api-status missing" id="anthropicStatus">Not set</span>
   </div>
 </header>
-
 <div class="main">
   <!-- LEFT PANEL -->
   <div class="left-panel">
@@ -578,13 +551,11 @@
       <button class="tab-btn" onclick="switchTab('summary')">💰 Summary</button>
       <button class="tab-btn" onclick="switchTab('history');renderHistory()">🕘 History</button>
     </div>
-
     <!-- FORM TAB -->
     <div class="tab-content active" id="tab-form">
       <div class="section-label">Client Info</div>
       <div class="field-row"><label>Client Name</label><input type="text" id="clientName" placeholder="e.g. Rachel Park"></div>
       <div class="field-row"><label>Email</label><input type="email" id="clientEmail" placeholder="email@example.com"></div>
-
       <div class="section-label">Event Details</div>
       <div class="two-col">
         <div class="field-row"><label>Event Date</label><input type="date" id="eventDate"></div>
@@ -607,7 +578,6 @@
         <label>Base Event Fee Override <span style="font-size:0.7rem;color:var(--muted)">(optional — leave blank to use standard pricing)</span></label>
         <input type="number" id="customBaseFee" placeholder="e.g. 750.00" min="0" step="0.01">
       </div>
-
       <div class="section-label">Setup</div>
       <div class="field-row">
         <label>Setup Space</label>
@@ -622,7 +592,6 @@
         <label>Package Notes <span style="font-size:0.7rem;color:var(--muted)">(auto-previewed — edit as needed before generating)</span></label>
         <textarea id="packageNotesOverride" style="min-height:60px;background:#f7fbff;border-color:#b7d2e2" placeholder="Fill in setup space and guest count above to preview..."></textarea>
       </div>
-
       <div class="section-label">Staffing</div>
       <div class="field-row">
         <label>Number of Servers <span style="font-size:0.7rem;color:var(--muted)">(auto-set: 2 for ≤200 servings)</span></label>
@@ -632,19 +601,16 @@
         <label>Additional Service Time <span style="font-size:0.7rem;color:var(--muted)">(extra hrs beyond package, $100/0.5 hr — leave blank if none)</span></label>
         <input type="number" id="addServiceHours" placeholder="e.g. 0.5" min="0" step="0.5">
       </div>
-
       <div class="section-label">Additional Line Items</div>
       <div id="lineItems"></div>
       <button class="btn btn-secondary" onclick="addLineItem()" style="margin-top:6px;width:100%;justify-content:center">
         + Add Line Item
       </button>
-
       <div class="section-label">Invoice</div>
       <div class="invoice-num-row">
         <div class="field-row"><label>Invoice #</label><input type="text" id="invoiceNum" placeholder="e.g. 2026-003"></div>
         <div class="field-row"><label>Date Issued</label><input type="date" id="dateIssued"></div>
       </div>
-
       <div class="section-label">Mileage Calculator</div>
       <button class="btn btn-secondary" onclick="calculateMileage()" id="mileageBtn">
         <span>🗺️</span> Calculate Mileage (Avoid Tolls)
@@ -657,7 +623,6 @@
         <input type="checkbox" id="omitMileage" style="width:16px;height:16px;cursor:pointer">
         <label for="omitMileage" style="margin:0;font-size:0.8rem;color:var(--text);cursor:pointer">Omit mileage fee from invoice (add custom amount as a line item if needed)</label>
       </div>
-
       <div class="section-label">Payment Schedule Override</div>
       <p style="font-size:0.75rem;color:var(--muted);margin-bottom:8px">Leave blank to use auto-calculated 50/50 split. Fill in to override (e.g. if deposit already paid and balance changed).</p>
       <div class="two-col">
@@ -668,13 +633,11 @@
         <label>Final Payment Due Date</label>
         <input type="date" id="finalDueOverride">
       </div>
-
       <button class="btn btn-primary" onclick="generateInvoice()" id="generateBtn">
         <div class="spinner" id="genSpinner"></div>
         Generate Invoice
       </button>
     </div>
-
     <!-- PASTE TAB -->
     <div class="tab-content" id="tab-paste">
       <div class="section-label">Paste Inquiry Form Submission</div>
@@ -686,30 +649,26 @@
       </button>
       <p style="font-size:0.72rem;color:var(--muted);margin-top:8px">After parsing, switch to Form Entry to review and calculate mileage.</p>
     </div>
-
     <!-- SUMMARY TAB -->
     <div class="tab-content" id="tab-summary">
       <div class="section-label">Pricing Breakdown</div>
       <div id="summaryContent">
         <p style="font-size:0.8rem;color:var(--muted)">Generate an invoice first to see the breakdown.</p>
       </div>
-
       <div class="section-label" style="margin-top:20px">Actions</div>
       <button class="btn btn-primary" onclick="downloadPDF()" id="downloadBtn" disabled>⬇️ Download PDF</button>
       <button class="btn btn-green" onclick="logToSheets()" id="sheetsBtn" disabled>📊 Log to Google Sheets</button>
-
       <div style="border-top:1px solid var(--border);margin-top:16px;padding-top:14px">
         <div class="section-label" style="margin-top:0">Confirmed Booking Only</div>
         <p style="font-size:0.75rem;color:var(--muted);margin-bottom:8px">Only add to calendar once the client has confirmed and paid the deposit.</p>
         <button class="btn btn-outline" onclick="addToCalendar()" id="calBtn" disabled>📅 Add to Google Calendar</button>
       </div>
     </div>
-
     <!-- HISTORY TAB -->
     <div class="tab-content" id="tab-history">
       <div class="section-label">Invoice History</div>
       <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">
-        <input type="text" id="historySearch" placeholder="🔍 Search by name, type, venue..." 
+        <input type="text" id="historySearch" placeholder="🔍 Search by name, type, venue..."
           style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:7px;font-size:0.8rem;font-family:'DM Sans',sans-serif"
           oninput="renderHistory()">
       </div>
@@ -721,7 +680,6 @@
       <div id="historyList" style="display:flex;flex-direction:column;gap:8px"></div>
     </div>
   </div>
-
   <!-- RIGHT PANEL -->
   <div class="right-panel">
     <div class="preview-toolbar">
@@ -740,34 +698,27 @@
     </div>
   </div>
 </div>
-
 <div class="toast" id="toast"></div>
-
 <script>
 // ── STATE ──────────────────────────────────────────────────────────────────
 const ORIGIN = "2065 Deer Haven Dr, Chino Hills, CA 91709";
 let invoiceData = null;
-const logoBase64 = "data:image/png;base64,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";
-
+const logoBase64 = "data:image/png;base64,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";
 // Set today's date
 document.getElementById('dateIssued').value = new Date().toISOString().split('T')[0];
-
 // Auto-preview package notes as form fields change
 function updatePackageNotesPreview() {
   const setupSpace = document.getElementById('setupSpace').value;
   const guestCount = parseInt(document.getElementById('guestCount').value) || 0;
   const notes = document.getElementById('additionalNotes').value.trim();
-
   let parts = [];
   if (setupSpace === 'indoor') parts.push('Indoor event – no canopy needed');
   else if (setupSpace === 'outdoor_shaded') parts.push('Outdoor event, fully shaded – no canopy needed');
   else if (setupSpace === 'outdoor_canopy') parts.push('Outdoor event – canopy needed');
   if (guestCount) parts.push(`Total guests: ${guestCount}`);
   if (notes) parts.push(notes);
-
   document.getElementById('packageNotesOverride').value = parts.join('. ');
 }
-
 // Auto-set server count based on servings
 function onServingsChange(val) {
   const s = parseInt(val) || 0;
@@ -775,29 +726,24 @@ function onServingsChange(val) {
   else if (s <= 254) document.getElementById('numServers').value = 3;
   else if (s <= 300) document.getElementById('numServers').value = 4;
 }
-
 document.getElementById('servings').addEventListener('change', function() {
   onServingsChange(this.value);
 });
-
 // ── LINE ITEMS ─────────────────────────────────────────────────────────────
 let lineItemCount = 0;
-
 // Pre-populate with common items
 const PRESET_LINE_ITEMS = [
   { name: 'Canopy Rental (White, 12\'x12\')', qty: 1, price: 100 },
 ];
-
 function addLineItem(name='', qty='', price='') {
   const container = document.getElementById('lineItems');
-  
+
   // Add headers if first item
   if (lineItemCount === 0) {
     container.innerHTML = `<div class="line-item-headers">
       <span></span><span>Description</span><span>Qty</span><span>Unit Price</span><span></span>
     </div>`;
   }
-
   const id = lineItemCount++;
   const div = document.createElement('div');
   div.className = 'line-item-row';
@@ -810,7 +756,6 @@ function addLineItem(name='', qty='', price='') {
     <button class="remove-btn" onclick="removeLineItem(${id})">×</button>
   `;
   container.appendChild(div);
-
   // Drag and drop
   const handle = div.querySelector('.drag-handle');
   handle.addEventListener('dragstart', (e) => {
@@ -819,7 +764,6 @@ function addLineItem(name='', qty='', price='') {
     e.dataTransfer.setData('text/plain', div.id);
   });
   handle.addEventListener('dragend', () => div.classList.remove('dragging'));
-
   div.addEventListener('dragover', (e) => {
     e.preventDefault();
     const dragging = document.querySelector('.dragging');
@@ -833,12 +777,10 @@ function addLineItem(name='', qty='', price='') {
       }
     }
   });
-
   // If "additional server" is added, recalculate gratuity hint
   document.getElementById(`li-name-${id}`).addEventListener('input', updateGratuityHint);
   document.getElementById(`li-qty-${id}`).addEventListener('input', updateGratuityHint);
 }
-
 function removeLineItem(id) {
   const el = document.getElementById(`li-${id}`);
   if (el) el.remove();
@@ -851,7 +793,6 @@ function removeLineItem(id) {
     lineItemCount = 0;
   }
 }
-
 function getLineItems() {
   const rows = document.getElementById('lineItems').querySelectorAll('.line-item-row');
   const items = [];
@@ -864,7 +805,6 @@ function getLineItems() {
   });
   return items;
 }
-
 function getExtraServers() {
   // Check if any line item is an additional server
   const items = getLineItems();
@@ -876,17 +816,13 @@ function getExtraServers() {
   });
   return extra;
 }
-
 function updateGratuityHint() {
   // Just a UI hint — actual calc happens on generate
 }
-
 // Invoice number left blank for manual input
-
 // API key watchers + localStorage persistence
 const googleKeyInput = document.getElementById('googleApiKey');
 const anthropicKeyInput = document.getElementById('anthropicApiKey');
-
 // Load saved keys on startup
 if (localStorage.getItem('cb_google_key')) {
   googleKeyInput.value = localStorage.getItem('cb_google_key');
@@ -898,7 +834,6 @@ if (localStorage.getItem('cb_anthropic_key')) {
   document.getElementById('anthropicStatus').textContent = 'Set ✓';
   document.getElementById('anthropicStatus').className = 'api-status ok';
 }
-
 googleKeyInput.addEventListener('input', function() {
   const status = document.getElementById('apiStatus');
   if (this.value.length > 10) {
@@ -919,7 +854,6 @@ anthropicKeyInput.addEventListener('input', function() {
     localStorage.removeItem('cb_anthropic_key');
   }
 });
-
 // ── TABS ──────────────────────────────────────────────────────────────────
 function switchTab(tab) {
   const tabs = ['form','paste','summary','history'];
@@ -930,7 +864,6 @@ function switchTab(tab) {
     c.classList.toggle('active', `tab-${tabs[i]}` === `tab-${tab}`);
   });
 }
-
 // ── TOAST ──────────────────────────────────────────────────────────────────
 function toast(msg, type='') {
   const t = document.getElementById('toast');
@@ -938,12 +871,10 @@ function toast(msg, type='') {
   t.className = `toast show ${type}`;
   setTimeout(() => t.className = 'toast', 2500);
 }
-
 // ── INVOICE HISTORY ────────────────────────────────────────────────────────
 const MAX_HISTORY = 200;
 const TRIM_TO = 180; // trim to this when near capacity
 let historySortMode = 'recent';
-
 function saveToHistory(data) {
   let history = getHistory();
   // Add timestamp
@@ -957,20 +888,17 @@ function saveToHistory(data) {
   }
   localStorage.setItem('cb_invoice_history', JSON.stringify(history));
 }
-
 function getHistory() {
   try {
     return JSON.parse(localStorage.getItem('cb_invoice_history') || '[]');
   } catch(e) { return []; }
 }
-
 function deleteFromHistory(id) {
   let history = getHistory();
   history = history.filter(h => h._id !== id);
   localStorage.setItem('cb_invoice_history', JSON.stringify(history));
   renderHistory();
 }
-
 function setHistorySort(mode) {
   historySortMode = mode;
   document.getElementById('sortRecent').style.background = mode === 'recent' ? 'var(--blue)' : '';
@@ -981,12 +909,10 @@ function setHistorySort(mode) {
   document.getElementById('sortInvoice').style.color = mode === 'invoice' ? 'white' : '';
   renderHistory();
 }
-
 function renderHistory() {
   const container = document.getElementById('historyList');
   const search = (document.getElementById('historySearch')?.value || '').toLowerCase();
   let history = getHistory();
-
   // Filter by search
   if (search) {
     history = history.filter(h =>
@@ -997,7 +923,6 @@ function renderHistory() {
       (h.clientEmail || '').toLowerCase().includes(search)
     );
   }
-
   // Sort
   if (historySortMode === 'event') {
     history.sort((a, b) => new Date(b.eventDate) - new Date(a.eventDate));
@@ -1006,12 +931,10 @@ function renderHistory() {
   } else {
     history.sort((a, b) => new Date(b._savedAt) - new Date(a._savedAt));
   }
-
   if (history.length === 0) {
     container.innerHTML = '<div class="history-empty">No invoices found</div>';
     return;
   }
-
   container.innerHTML = history.map(h => {
     const eventDateStr = h.eventDate ? formatDateLong(h.eventDate).replace(/\w+, /, '') : '—';
     const savedDate = h._savedAt ? new Date(h._savedAt).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) : '—';
@@ -1032,12 +955,10 @@ function renderHistory() {
     `;
   }).join('');
 }
-
 function loadFromHistory(id) {
   const history = getHistory();
   const h = history.find(x => x._id === id);
   if (!h) { toast('Invoice not found', 'red'); return; }
-
   // Fill form fields
   document.getElementById('clientName').value = h.clientName || '';
   document.getElementById('clientEmail').value = h.clientEmail || '';
@@ -1049,68 +970,53 @@ function loadFromHistory(id) {
   document.getElementById('numServers').value = h.numServers || 2;
   document.getElementById('invoiceNum').value = h.invoiceNum || '';
   document.getElementById('additionalNotes').value = '';
-
   // Set times from serviceTimeStr if available
   if (h.startTime) document.getElementById('startTime').value = h.startTime;
   if (h.endTime) document.getElementById('endTime').value = h.endTime;
-
   // Set servings and trigger change
   document.getElementById('servings').value = h.servings || '';
   onServingsChange(h.servings || 0);
-
   // Custom base fee override
   document.getElementById('customBaseFee').value = h.customBaseFeeOverride || '';
-
   // Restore mileage
   window._mileage = h.mileage || 0;
   if (h.mileage > 0) {
     document.getElementById('mileageDisplay').textContent = `${h.mileage} mi roundtrip → $${h.mileage.toFixed(2)}`;
     document.getElementById('mileageResult').style.display = 'block';
   }
-
   // Restore custom line items
   document.getElementById('lineItems').innerHTML = '';
   lineItemCount = 0;
   if (h.customItems && h.customItems.length > 0) {
     h.customItems.forEach(item => addLineItem(item.name, item.qty, item.price));
   }
-
   document.getElementById('pricePerBowlOverride').value = h.bingsuUnitPrice !== (h.servings <= 104 ? 8.75 : 8.50) ? h.bingsuUnitPrice : '';
   document.getElementById('addServiceHours').value = h.addTimeQty || '';
-
   document.getElementById('packageNotesOverride').value = h.packageNotes || '';
   document.getElementById('omitMileage').checked = false;
-
   // Clear overrides on load
   document.getElementById('mileageOverride').value = '';
   document.getElementById('depositOverride').value = '';
   document.getElementById('finalPayOverride').value = '';
   document.getElementById('finalDueOverride').value = '';
-
   switchTab('form');
   toast('✅ Invoice loaded — make your edits and regenerate!', 'green');
 }
-
 // ── PARSE INQUIRY ──────────────────────────────────────────────────────────
 async function parseInquiry() {
   const text = document.getElementById('pasteArea').value.trim();
   if (!text) { toast('Please paste an inquiry first', 'red'); return; }
-
   const btn = document.getElementById('parseBtn');
   const spinner = document.getElementById('parseSpinner');
   btn.disabled = true; spinner.style.display = 'block';
-
   try {
     const response = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
       body: JSON.stringify({ action: 'parse', inquiryText: text })
     });
-
     const data = await response.json();
     if (data.status !== 'success') throw new Error(data.message || 'Parse failed');
-
     const parsed = data.parsed;
-
     // Fill form fields
     if (parsed.clientName) document.getElementById('clientName').value = parsed.clientName;
     if (parsed.clientEmail) document.getElementById('clientEmail').value = parsed.clientEmail;
@@ -1123,7 +1029,6 @@ async function parseInquiry() {
     if (parsed.guestCount) document.getElementById('guestCount').value = parsed.guestCount;
     if (parsed.setupSpace) document.getElementById('setupSpace').value = parsed.setupSpace;
     if (parsed.additionalNotes) document.getElementById('additionalNotes').value = parsed.additionalNotes;
-
     toast('✅ Fields auto-filled!', 'green');
     switchTab('form');
   } catch(e) {
@@ -1133,21 +1038,17 @@ async function parseInquiry() {
     btn.disabled = false; spinner.style.display = 'none';
   }
 }
-
 // ── MILEAGE CALCULATOR ─────────────────────────────────────────────────────
 async function calculateMileage() {
   const apiKey = document.getElementById('googleApiKey').value.trim();
   const venue = document.getElementById('venue').value.trim();
   const eventDate = document.getElementById('eventDate').value;
   const startTime = document.getElementById('startTime').value;
-
   if (!apiKey) { toast('Please enter your Google API key', 'red'); return; }
   if (!venue) { toast('Please enter a venue address', 'red'); return; }
-
   const btn = document.getElementById('mileageBtn');
   btn.disabled = true;
   btn.innerHTML = '<span>⏳</span> Calculating...';
-
   try {
     // Calculate arrival time = start time - 1 hour
     let arrivalTime = null;
@@ -1156,7 +1057,6 @@ async function calculateMileage() {
       dt.setHours(dt.getHours() - 1);
       arrivalTime = dt.toISOString();
     }
-
     // Routes API — direct call (no proxy needed)
     const body = {
       origin: { address: ORIGIN },
@@ -1169,7 +1069,6 @@ async function calculateMileage() {
       units: 'IMPERIAL'
     };
     if (arrivalTime) body.arrivalTime = arrivalTime;
-
     const resp = await fetch('https://routes.googleapis.com/directions/v2:computeRoutes', {
       method: 'POST',
       headers: {
@@ -1179,16 +1078,13 @@ async function calculateMileage() {
       },
       body: JSON.stringify(body)
     });
-
     const data = await resp.json();
     if (!data.routes || data.routes.length === 0) {
       throw new Error(data.error?.message || 'No routes found');
     }
-
     const route = data.routes[0];
     const oneWayMiles = (route.distanceMeters / 1609.34).toFixed(1);
     const roundTrip = (parseFloat(oneWayMiles) * 2).toFixed(1);
-
     // Departure time
     let departText = '';
     if (eventDate && startTime) {
@@ -1199,14 +1095,11 @@ async function calculateMileage() {
       const depart = new Date(arrival.getTime() - durationSecs * 1000);
       departText = `Depart by: ${depart.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'})}`;
     }
-
     document.getElementById('mileageDisplay').textContent = `${roundTrip} mi roundtrip → $${parseFloat(roundTrip).toFixed(2)}`;
     document.getElementById('departDisplay').textContent = departText || 'Add event date & time for departure estimate';
     document.getElementById('mileageResult').style.display = 'block';
-
     window._mileage = parseFloat(roundTrip);
     toast(`✅ ${roundTrip} mi roundtrip`, 'green');
-
   } catch(e) {
     toast(`Mileage failed: ${e.message}`, 'red');
     console.error(e);
@@ -1215,7 +1108,6 @@ async function calculateMileage() {
     btn.innerHTML = '<span>🗺️</span> Recalculate Mileage';
   }
 }
-
 // ── BUSINESS LOGIC ─────────────────────────────────────────────────────────
 function getBaseFee(servings) {
   if (servings <= 104) return 500;
@@ -1225,26 +1117,18 @@ function getBaseFee(servings) {
   if (servings <= 300) return 1100;
   return null; // custom — user inputs manually
 }
-
 function getIncludedHours(servings) {
   if (servings <= 104) return 1.5;
-  if (servings <= 154) return 2.0;
-  if (servings <= 174) return 2.25;
-  if (servings <= 204) return 2.5;
-  if (servings <= 254) return 2.0;
   if (servings <= 300) return 2.0;
   return null; // varies
 }
-
 function formatCurrency(n) {
   return '$' + parseFloat(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
-
 function formatDateLong(dateStr) {
   const d = new Date(dateStr + 'T12:00:00');
   return d.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
 }
-
 function formatTime(t) {
   if (!t) return '';
   const [h, m] = t.split(':').map(Number);
@@ -1252,7 +1136,6 @@ function formatTime(t) {
   const h12 = h % 12 || 12;
   return `${h12}:${m.toString().padStart(2,'0')} ${ampm}`;
 }
-
 // ── GENERATE INVOICE ───────────────────────────────────────────────────────
 function generateInvoice() {
   const clientName   = document.getElementById('clientName').value.trim();
@@ -1269,12 +1152,10 @@ function generateInvoice() {
   const invoiceNum   = document.getElementById('invoiceNum').value.trim() || '—';
   const dateIssued   = document.getElementById('dateIssued').value;
   const numServers   = parseInt(document.getElementById('numServers').value) || 2;
-
   if (!clientName || !eventDate || !servings) {
     toast('Please fill in client name, event date, and servings', 'red');
     return;
   }
-
   // Pricing
   const autoBaseFee = getBaseFee(servings);
   const customBaseFeeInput = parseFloat(document.getElementById('customBaseFee').value);
@@ -1286,7 +1167,6 @@ function generateInvoice() {
   const mileage = window._mileage || 0;
   const omitMileage = document.getElementById('omitMileage').checked;
   const mileageTotal = omitMileage ? 0 : mileage;
-
   // Service hours & additional time
   let serviceHours = 0;
   let addTimeQty = 0, addTimeTotal = 0;
@@ -1310,28 +1190,22 @@ function generateInvoice() {
   }
   // Total service hours = included hours (or actual) + additional
   const totalServiceHours = (serviceHours || includedHours || 0) + ((!isNaN(manualAddHours) && manualAddHours > 0) ? manualAddHours : 0);
-
   // Gratuity — servers × $30/hr × total service hours (included + additional)
   const gratuityRate = numServers * 30;
   const gratuityHrs = totalServiceHours;
   const gratuityTotal = gratuityHrs * gratuityRate;
-
   // Custom line items
   const customItems = getLineItems();
   const customTotal = customItems.reduce((sum, item) => sum + item.total, 0);
-
   const grandTotal = (baseFee || 0) + bingsuTotal + mileageTotal + addTimeTotal + gratuityTotal + customTotal;
-
   // Payment schedule — use overrides if provided
   const depositOverride = parseFloat(document.getElementById('depositOverride').value);
   const finalPayOverride = parseFloat(document.getElementById('finalPayOverride').value);
   const finalDueOverrideVal = document.getElementById('finalDueOverride').value;
-
   const today = new Date();
   const eventDt = new Date(eventDate + 'T12:00:00');
   const daysUntil = Math.floor((eventDt - today) / 86400000);
   let deposit, finalPay, finalDue;
-
   if (!isNaN(depositOverride) || !isNaN(finalPayOverride)) {
     // Manual override
     deposit = !isNaN(depositOverride) ? depositOverride : grandTotal;
@@ -1351,7 +1225,6 @@ function generateInvoice() {
     dueDt.setDate(dueDt.getDate() - 14);
     finalDue = `${(dueDt.getMonth()+1).toString().padStart(2,'0')}/${dueDt.getDate().toString().padStart(2,'0')}/${dueDt.getFullYear().toString().slice(2)}`;
   }
-
   // Package notes
   let packageNotes = [];
   if (setupSpace === 'indoor') packageNotes.push('Indoor event – no canopy needed');
@@ -1360,16 +1233,13 @@ function generateInvoice() {
   if (guestCount) packageNotes.push(`Total guests: ${guestCount}`);
   if (notes) packageNotes.push(notes);
   const autoPackageNotes = packageNotes.join('. ');
-
   // Use manual override if filled in, else auto
   const packageNotesOverride = document.getElementById('packageNotesOverride').value.trim();
   const finalPackageNotes = packageNotesOverride || autoPackageNotes;
-
   // Service time string
   const serviceTimeStr = startTime && endTime
     ? `${formatTime(startTime)}–${formatTime(endTime)} (${serviceHours % 1 === 0 ? serviceHours : serviceHours.toFixed(1)} hrs)`
     : '—';
-
   invoiceData = {
     clientName, clientEmail, eventDate, eventType, venue,
     serviceTimeStr, packageNotes: finalPackageNotes,
@@ -1380,41 +1250,33 @@ function generateInvoice() {
     grandTotal, deposit, finalPay, finalDue, daysUntil,
     guestCount, setupSpace
   };
-
   // Save start/end times to invoiceData for history reload
   invoiceData.startTime = startTime;
   invoiceData.endTime = endTime;
   invoiceData.customBaseFeeOverride = document.getElementById('customBaseFee').value || '';
-
   renderPreview(invoiceData);
   updateSummary(invoiceData);
   saveToHistory({...invoiceData});
   document.getElementById('downloadBtn').disabled = false;
   document.getElementById('sheetsBtn').disabled = false;
   document.getElementById('calBtn').disabled = false;
-
   switchTab('summary');
   toast('✅ Invoice generated!', 'green');
 }
-
 // ── RENDER PREVIEW ─────────────────────────────────────────────────────────
 function renderPreview(d) {
   const dateStr = d.eventDate ? formatDateLong(d.eventDate) : '—';
   const issuedStr = d.dateIssued || '—';
-
   const addTimeRow = d.addTimeQty > 0
     ? `<tr><td>Additional Service Time</td><td>$100/0.5 hr</td><td>${d.addTimeQty} hr</td><td>${formatCurrency(d.addTimeTotal)}</td></tr>`
     : '';
-
   const customRows = (d.customItems || []).map(item =>
     `<tr><td>${item.name}</td><td>${formatCurrency(item.price)}</td><td>${item.qty}</td><td>${formatCurrency(item.total)}</td></tr>`
   ).join('');
-
   const paymentRows = d.finalPay === null
     ? `<tr><td class="sched-label" rowspan="1">Payment Schedule</td><td class="sched-desc">Full Payment (Due At Signing)</td><td class="sched-amt">${formatCurrency(d.deposit)}</td></tr>`
     : `<tr><td class="sched-label" rowspan="2">Payment Schedule</td><td class="sched-desc">Deposit (Due At Signing)</td><td class="sched-amt">${formatCurrency(d.deposit)}</td></tr>
        <tr><td class="sched-desc">Final Payment (Due By ${d.finalDue})</td><td class="sched-amt">${formatCurrency(d.finalPay)}</td></tr>`;
-
   document.getElementById('invoice-preview').innerHTML = `
     <div class="inv-header">
       <img src="${logoBase64 || ''}" class="inv-logo">
@@ -1424,7 +1286,6 @@ function renderPreview(d) {
         <div class="meta-contact">coolbeansbingsu.com<br>coolbeansbingsu@gmail.com<br>562-544-7722</div>
       </div>
     </div>
-
     <div class="inv-details-grid">
       <div>
         <div class="inv-details-label">Event Details</div>
@@ -1444,7 +1305,6 @@ function renderPreview(d) {
         </div>
       </div>
     </div>
-
     <table class="inv-table">
       <thead>
         <tr><th>Description</th><th>Unit Price</th><th>Qty</th><th>Total</th></tr>
@@ -1459,18 +1319,15 @@ function renderPreview(d) {
         <tr class="inv-total-row"><td colspan="3" style="text-align:right;padding-right:10px">Total</td><td>${formatCurrency(d.grandTotal)}</td></tr>
       </tbody>
     </table>
-
     <table class="inv-payment">
       <tbody>${paymentRows}</tbody>
     </table>
-
     <div class="inv-terms">
       This package includes all set-up/breakdown, fresh food prep, and hours of service. Eco-friendly compostable bowls, spoons, and napkins also provided for the number of guaranteed bingsu servings listed above.<br><br>
       Quote valid for 30 days. All orders must be finalized and the balance paid in full (14) days prior to the event. The Client must confirm the final guaranteed number of bingsu servings at least 14 days before the event. This number is the minimum that will be billed. If fewer servings are consumed, the Client is still responsible for the full guaranteed amount. No refunds will be given for unconsumed servings. If more servings are needed, Cool Beans Bingsu will try to accommodate with the Client's approval. However, additional service and food availability are not guaranteed and will be billed after the event if added.<br><br>
       Cancellation: If services are cancelled more than 30 days prior to the event date, you may receive a partial refund of the deposit made upon written request. The partial refund may not exceed 50% of all payments made. If the event is cancelled within 30 days of the event date, the deposit (50% of total package price) will not be refunded. Any additional payments that were made after the deposit can be refunded upon written request. In the case of a cancellation, this contract and the services/prices listed are not transferable to any other client, date, or event.<br><br>
       By signing below or making a payment to Cool Beans Bingsu, Client accepts and agrees to the terms of this document.
     </div>
-
     <div class="inv-sig">
       <div class="inv-sig-block">
         <div class="inv-sig-line"></div>
@@ -1493,35 +1350,27 @@ function updateSummary(d) {
     [`Gratuity (${d.gratuityHrs} hrs × $${d.numServers * 30}/hr)`, formatCurrency(d.gratuityTotal)],
     ...(d.customItems || []).map(item => [`${item.name} (×${item.qty})`, formatCurrency(item.total)]),
   ].filter(Boolean);
-
   let html = rows.map(([l,v]) => `
     <div class="calc-row">
       <span class="label">${l}</span>
       <span class="value">${v}</span>
     </div>`).join('');
-
   html += `<div class="calc-row total"><span class="label">Total</span><span class="value">${formatCurrency(d.grandTotal)}</span></div>`;
-
   if (d.finalPay === null) {
     html += `<div class="calc-row"><span class="label">Full Payment (At Signing)</span><span class="value">${formatCurrency(d.deposit)}</span></div>`;
   } else {
     html += `<div class="calc-row"><span class="label">Deposit (At Signing)</span><span class="value">${formatCurrency(d.deposit)}</span></div>`;
     html += `<div class="calc-row"><span class="label">Final Payment (By ${d.finalDue})</span><span class="value">${formatCurrency(d.finalPay)}</span></div>`;
   }
-
   document.getElementById('summaryContent').innerHTML = html;
 }
-
 // ── DOWNLOAD PDF ───────────────────────────────────────────────────────────
 function downloadPDF() {
   if (!invoiceData) { toast('Generate an invoice first', 'red'); return; }
-
   var dp = invoiceData.eventDate ? invoiceData.eventDate.split('-') : ['00','00','00'];
   var dateStr = dp[1] + '.' + dp[2] + '.' + dp[0].slice(2);
   var fileName = invoiceData.clientName + ' ' + dateStr + ' Cool Beans Bingsu #' + invoiceData.invoiceNum;
-
   const invoiceHTML = document.getElementById('invoice-preview').innerHTML;
-
   // Create a hidden print container
   let printDiv = document.getElementById('print-container');
   if (!printDiv) {
@@ -1535,17 +1384,13 @@ function downloadPDF() {
   // Clean up after print
   setTimeout(() => { printDiv.innerHTML = ''; }, 1000);
 }
-
 // ── GOOGLE SHEETS ─────────────────────────────────────────────────────────
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw4kPfG0A6pUkyhOYfuxhoac-xhfSG2lkCnQOkJKZsFZ16ihqpBTnwYxmA_bLeqV_vL_w/exec";
-
 async function logToSheets() {
   if (!invoiceData) { toast('Generate an invoice first', 'red'); return; }
-
   const btn = document.getElementById('sheetsBtn');
   btn.disabled = true;
   btn.textContent = '⏳ Logging...';
-
   const d = invoiceData;
   const payload = {
     action:        'log',
@@ -1572,7 +1417,6 @@ async function logToSheets() {
     finalPay:      d.finalPay,
     finalDue:      d.finalDue || 'Due At Signing'
   };
-
   try {
     const resp = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
@@ -1592,16 +1436,13 @@ async function logToSheets() {
     btn.textContent = '📊 Log to Google Sheets';
   }
 }
-
 // ── GOOGLE CALENDAR ───────────────────────────────────────────────────────
 function addToCalendar() {
   if (!invoiceData) { toast('Generate an invoice first', 'red'); return; }
   const d = invoiceData;
-
   // Build .ics file
   const dtStart = d.eventDate.replace(/-/g,'') + 'T' + (document.getElementById('startTime').value || '120000').replace(':','') + '00';
   const dtEnd   = d.eventDate.replace(/-/g,'') + 'T' + (document.getElementById('endTime').value   || '140000').replace(':','') + '00';
-
   const ics = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
@@ -1614,7 +1455,6 @@ function addToCalendar() {
     'END:VEVENT',
     'END:VCALENDAR'
   ].join('\r\n');
-
   const blob = new Blob([ics], { type: 'text/calendar' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href = url;
