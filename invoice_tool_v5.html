@@ -633,6 +633,12 @@
         <label>Final Payment Due Date</label>
         <input type="date" id="finalDueOverride">
       </div>
+      <div class="section-label">Payment Schedule Line Items <span style="font-size:0.7rem;color:var(--muted);text-transform:none;letter-spacing:normal">(optional — fully custom rows)</span></div>
+      <p style="font-size:0.75rem;color:var(--muted);margin-bottom:8px">Add rows to describe exactly what's been paid and what's still owed (e.g. "Deposit Paid 8/20/26" — $1,420.90, "Balance Due 9/11/26" — $1,420.90). Adding any rows here replaces the auto-calculated schedule and the override fields above on the invoice.</p>
+      <div id="paymentScheduleItems"></div>
+      <button class="btn btn-secondary" onclick="addPaymentScheduleItem()" style="margin-top:6px;width:100%;justify-content:center">
+        + Add Payment Schedule Line
+      </button>
       <button class="btn btn-primary" onclick="generateInvoice()" id="generateBtn">
         <div class="spinner" id="genSpinner"></div>
         Generate Invoice
@@ -819,6 +825,68 @@ function getExtraServers() {
 function updateGratuityHint() {
   // Just a UI hint — actual calc happens on generate
 }
+// ── PAYMENT SCHEDULE LINE ITEMS ─────────────────────────────────────────────
+let paymentScheduleItemCount = 0;
+function addPaymentScheduleItem(desc='', amount='') {
+  const container = document.getElementById('paymentScheduleItems');
+  if (paymentScheduleItemCount === 0) {
+    container.innerHTML = `<div class="line-item-headers">
+      <span></span><span style="grid-column: span 2">Description</span><span>Amount</span><span></span>
+    </div>`;
+  }
+  const id = paymentScheduleItemCount++;
+  const div = document.createElement('div');
+  div.className = 'line-item-row';
+  div.id = `psi-${id}`;
+  div.innerHTML = `
+    <span class="drag-handle" draggable="true" title="Drag to reorder">⠿</span>
+    <input type="text" placeholder="e.g. Deposit Paid (8/20/26)" value="${desc}" id="psi-desc-${id}" style="grid-column: span 2">
+    <input type="number" placeholder="0.00" value="${amount}" step="0.01" id="psi-amount-${id}">
+    <button class="remove-btn" onclick="removePaymentScheduleItem(${id})">×</button>
+  `;
+  container.appendChild(div);
+  const handle = div.querySelector('.drag-handle');
+  handle.addEventListener('dragstart', (e) => {
+    e.dataTransfer.effectAllowed = 'move';
+    div.classList.add('dragging');
+    e.dataTransfer.setData('text/plain', div.id);
+  });
+  handle.addEventListener('dragend', () => div.classList.remove('dragging'));
+  div.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    const dragging = document.querySelector('#paymentScheduleItems .dragging');
+    if (dragging && dragging !== div) {
+      const rect = div.getBoundingClientRect();
+      const mid = rect.top + rect.height / 2;
+      if (e.clientY < mid) {
+        container.insertBefore(dragging, div);
+      } else {
+        container.insertBefore(dragging, div.nextSibling);
+      }
+    }
+  });
+}
+function removePaymentScheduleItem(id) {
+  const el = document.getElementById(`psi-${id}`);
+  if (el) el.remove();
+  paymentScheduleItemCount--;
+  const container = document.getElementById('paymentScheduleItems');
+  if (container.querySelectorAll('.line-item-row').length === 0) {
+    container.innerHTML = '';
+    paymentScheduleItemCount = 0;
+  }
+}
+function getPaymentScheduleItems() {
+  const rows = document.getElementById('paymentScheduleItems').querySelectorAll('.line-item-row');
+  const items = [];
+  rows.forEach(row => {
+    const id = row.id.replace('psi-', '');
+    const desc = document.getElementById(`psi-desc-${id}`)?.value.trim();
+    const amount = parseFloat(document.getElementById(`psi-amount-${id}`)?.value);
+    if (desc) items.push({ desc, amount: isNaN(amount) ? 0 : amount });
+  });
+  return items;
+}
 // Invoice number left blank for manual input
 // API key watchers + localStorage persistence
 const googleKeyInput = document.getElementById('googleApiKey');
@@ -990,12 +1058,17 @@ function loadFromHistory(id) {
   if (h.customItems && h.customItems.length > 0) {
     h.customItems.forEach(item => addLineItem(item.name, item.qty, item.price));
   }
+  // Restore custom payment schedule items
+  document.getElementById('paymentScheduleItems').innerHTML = '';
+  paymentScheduleItemCount = 0;
+  if (h.customPaymentSchedule && h.customPaymentSchedule.length > 0) {
+    h.customPaymentSchedule.forEach(item => addPaymentScheduleItem(item.desc, item.amount));
+  }
   document.getElementById('pricePerBowlOverride').value = h.bingsuUnitPrice !== (h.servings <= 104 ? 8.75 : 8.50) ? h.bingsuUnitPrice : '';
   document.getElementById('addServiceHours').value = h.addTimeQty || '';
   document.getElementById('packageNotesOverride').value = h.packageNotes || '';
   document.getElementById('omitMileage').checked = false;
   // Clear overrides on load
-  document.getElementById('mileageOverride').value = '';
   document.getElementById('depositOverride').value = '';
   document.getElementById('finalPayOverride').value = '';
   document.getElementById('finalDueOverride').value = '';
@@ -1198,6 +1271,8 @@ function generateInvoice() {
   const customItems = getLineItems();
   const customTotal = customItems.reduce((sum, item) => sum + item.total, 0);
   const grandTotal = (baseFee || 0) + bingsuTotal + mileageTotal + addTimeTotal + gratuityTotal + customTotal;
+  // Custom payment schedule line items (fully override the auto-calculated schedule when present)
+  const customPaymentSchedule = getPaymentScheduleItems();
   // Payment schedule — use overrides if provided
   const depositOverride = parseFloat(document.getElementById('depositOverride').value);
   const finalPayOverride = parseFloat(document.getElementById('finalPayOverride').value);
@@ -1246,7 +1321,7 @@ function generateInvoice() {
     invoiceNum, dateIssued: dateIssued ? formatDateLong(dateIssued).replace(/\w+, /, '') : '—',
     servings, bingsuUnitPrice, bingsuTotal, baseFee, mileage, mileageTotal, omitMileage,
     addTimeQty, addTimeTotal, gratuityHrs, gratuityTotal, gratuityRate,
-    numServers, customItems, customTotal,
+    numServers, customItems, customTotal, customPaymentSchedule,
     grandTotal, deposit, finalPay, finalDue, daysUntil,
     guestCount, setupSpace
   };
@@ -1273,10 +1348,16 @@ function renderPreview(d) {
   const customRows = (d.customItems || []).map(item =>
     `<tr><td>${item.name}</td><td>${formatCurrency(item.price)}</td><td>${item.qty}</td><td>${formatCurrency(item.total)}</td></tr>`
   ).join('');
-  const paymentRows = d.finalPay === null
-    ? `<tr><td class="sched-label" rowspan="1">Payment Schedule</td><td class="sched-desc">Full Payment (Due At Signing)</td><td class="sched-amt">${formatCurrency(d.deposit)}</td></tr>`
-    : `<tr><td class="sched-label" rowspan="2">Payment Schedule</td><td class="sched-desc">Deposit (Due At Signing)</td><td class="sched-amt">${formatCurrency(d.deposit)}</td></tr>
-       <tr><td class="sched-desc">Final Payment (Due By ${d.finalDue})</td><td class="sched-amt">${formatCurrency(d.finalPay)}</td></tr>`;
+  const hasCustomSchedule = d.customPaymentSchedule && d.customPaymentSchedule.length > 0;
+  const paymentRows = hasCustomSchedule
+    ? d.customPaymentSchedule.map((item, i) => i === 0
+        ? `<tr><td class="sched-label" rowspan="${d.customPaymentSchedule.length}">Payment Schedule</td><td class="sched-desc">${item.desc}</td><td class="sched-amt">${formatCurrency(item.amount)}</td></tr>`
+        : `<tr><td class="sched-desc">${item.desc}</td><td class="sched-amt">${formatCurrency(item.amount)}</td></tr>`
+      ).join('')
+    : d.finalPay === null
+      ? `<tr><td class="sched-label" rowspan="1">Payment Schedule</td><td class="sched-desc">Full Payment (Due At Signing)</td><td class="sched-amt">${formatCurrency(d.deposit)}</td></tr>`
+      : `<tr><td class="sched-label" rowspan="2">Payment Schedule</td><td class="sched-desc">Deposit (Due At Signing)</td><td class="sched-amt">${formatCurrency(d.deposit)}</td></tr>
+         <tr><td class="sched-desc">Final Payment (Due By ${d.finalDue})</td><td class="sched-amt">${formatCurrency(d.finalPay)}</td></tr>`;
   document.getElementById('invoice-preview').innerHTML = `
     <div class="inv-header">
       <img src="${logoBase64 || ''}" class="inv-logo">
@@ -1356,7 +1437,11 @@ function updateSummary(d) {
       <span class="value">${v}</span>
     </div>`).join('');
   html += `<div class="calc-row total"><span class="label">Total</span><span class="value">${formatCurrency(d.grandTotal)}</span></div>`;
-  if (d.finalPay === null) {
+  if (d.customPaymentSchedule && d.customPaymentSchedule.length > 0) {
+    d.customPaymentSchedule.forEach(item => {
+      html += `<div class="calc-row"><span class="label">${item.desc}</span><span class="value">${formatCurrency(item.amount)}</span></div>`;
+    });
+  } else if (d.finalPay === null) {
     html += `<div class="calc-row"><span class="label">Full Payment (At Signing)</span><span class="value">${formatCurrency(d.deposit)}</span></div>`;
   } else {
     html += `<div class="calc-row"><span class="label">Deposit (At Signing)</span><span class="value">${formatCurrency(d.deposit)}</span></div>`;
