@@ -1526,7 +1526,12 @@ async function logToSheets() {
     });
     const result = await resp.json();
     if (result.status === 'success') {
-      toast('✅ Logged to Google Sheets!', 'green');
+      if (result.debug) {
+        console.log('Log to Sheets debug:', result.debug);
+        toast(`✅ Logged to "${result.debug.sheetFound}" tab (row ${result.debug.insertRow})`, 'green');
+      } else {
+        toast('✅ Logged to Google Sheets!', 'green');
+      }
     } else {
       throw new Error(result.message);
     }
