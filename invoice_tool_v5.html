@@ -1051,9 +1051,11 @@ function loadFromHistory(id) {
   // Custom base fee override
   document.getElementById('customBaseFee').value = h.customBaseFeeOverride || '';
   // Restore mileage
-  window._mileage = h.mileage || 0;
+  window._mileageMiles = h.mileage || 0;
+  window._mileageRate = h.mileageRate || (h.mileage > 0 ? getMileageRate(h.mileage) : 0);
+  window._mileageTotal = (h.mileageTotal != null) ? h.mileageTotal : (h.mileage || 0) * window._mileageRate;
   if (h.mileage > 0) {
-    document.getElementById('mileageDisplay').textContent = `${h.mileage} mi roundtrip → $${h.mileage.toFixed(2)}`;
+    document.getElementById('mileageDisplay').textContent = `${h.mileage} mi roundtrip → ${formatCurrency(window._mileageTotal)} ($${window._mileageRate.toFixed(2)}/mi)`;
     document.getElementById('mileageResult').style.display = 'block';
   }
   // Restore custom line items
@@ -1173,11 +1175,16 @@ async function calculateMileage() {
       const depart = new Date(arrival.getTime() - durationSecs * 1000);
       departText = `Depart by: ${depart.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'})}`;
     }
-    document.getElementById('mileageDisplay').textContent = `${roundTrip} mi roundtrip → $${parseFloat(roundTrip).toFixed(2)}`;
+    const roundTripNum = parseFloat(roundTrip);
+    const mileageRate = getMileageRate(roundTripNum);
+    const mileageTotalCalc = roundTripNum * mileageRate;
+    document.getElementById('mileageDisplay').textContent = `${roundTrip} mi roundtrip → $${mileageTotalCalc.toFixed(2)} ($${mileageRate.toFixed(2)}/mi)`;
     document.getElementById('departDisplay').textContent = departText || 'Add event date & time for departure estimate';
     document.getElementById('mileageResult').style.display = 'block';
-    window._mileage = parseFloat(roundTrip);
-    toast(`✅ ${roundTrip} mi roundtrip`, 'green');
+    window._mileageMiles = roundTripNum;
+    window._mileageRate = mileageRate;
+    window._mileageTotal = mileageTotalCalc;
+    toast(`✅ ${roundTrip} mi roundtrip ($${mileageRate.toFixed(2)}/mi)`, 'green');
   } catch(e) {
     toast(`Mileage failed: ${e.message}`, 'red');
     console.error(e);
@@ -1199,6 +1206,15 @@ function getIncludedHours(servings) {
   if (servings <= 104) return 1.5;
   if (servings <= 300) return 2.0;
   return null; // varies
+}
+// Roundtrip mileage fee tiers:
+//   under 100 mi  → $1.00/mi  (e.g. Santa Ana ~50, Irvine ~65, Beverly Hills ~85)
+//   100–200 mi    → $1.25/mi  (e.g. Temecula ~140, Malibu ~150, Camarillo ~175)
+//   200+ mi       → $1.50/mi  (e.g. San Diego ~230, Montecito ~250)
+function getMileageRate(roundTripMiles) {
+  if (roundTripMiles < 100) return 1.00;
+  if (roundTripMiles <= 200) return 1.25;
+  return 1.50;
 }
 function formatCurrency(n) {
   return '$' + parseFloat(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -1242,9 +1258,11 @@ function generateInvoice() {
   const pricePerBowlOverride = parseFloat(document.getElementById('pricePerBowlOverride').value);
   const bingsuUnitPrice = (!isNaN(pricePerBowlOverride) && pricePerBowlOverride > 0) ? pricePerBowlOverride : autoBingsuPrice;
   const bingsuTotal = servings * bingsuUnitPrice;
-  const mileage = window._mileage || 0;
+  const mileage = window._mileageMiles || 0;
+  const mileageRate = window._mileageRate || (mileage > 0 ? getMileageRate(mileage) : 0);
   const omitMileage = document.getElementById('omitMileage').checked;
-  const mileageTotal = omitMileage ? 0 : mileage;
+  const rawMileageTotal = (window._mileageTotal != null) ? window._mileageTotal : (mileage * mileageRate);
+  const mileageTotal = omitMileage ? 0 : rawMileageTotal;
   // Service hours & additional time
   let serviceHours = 0;
   let addTimeQty = 0, addTimeTotal = 0;
@@ -1325,7 +1343,7 @@ function generateInvoice() {
     clientName, clientEmail, eventDate, eventType, venue,
     serviceTimeStr, packageNotes: finalPackageNotes,
     invoiceNum, dateIssued: dateIssued ? formatDateLong(dateIssued).replace(/\w+, /, '') : '—',
-    servings, bingsuUnitPrice, bingsuTotal, baseFee, mileage, mileageTotal, omitMileage,
+    servings, bingsuUnitPrice, bingsuTotal, baseFee, mileage, mileageRate, mileageTotal, omitMileage,
     addTimeQty, addTimeTotal, gratuityHrs, gratuityTotal, gratuityRate,
     numServers, customItems, customTotal, customPaymentSchedule, omitPaymentSchedule,
     grandTotal, deposit, finalPay, finalDue, daysUntil,
@@ -1407,7 +1425,7 @@ function renderPreview(d) {
       <tbody>
         <tr><td>Base Event Fee</td><td>${formatCurrency(d.baseFee || 0)}</td><td>1</td><td>${formatCurrency(d.baseFee || 0)}</td></tr>
         <tr><td>Bingsu Servings</td><td>${formatCurrency(d.bingsuUnitPrice)}</td><td>${d.servings}</td><td>${formatCurrency(d.bingsuTotal)}</td></tr>
-        ${d.omitMileage ? '' : `<tr><td>Mileage Fee</td><td>$1/mi</td><td>${d.mileage > 0 ? d.mileage + ' mi' : '0'}</td><td>${d.mileage > 0 ? formatCurrency(d.mileageTotal) : '$0.00'}</td></tr>`}
+        ${d.omitMileage ? '' : `<tr><td>Mileage Fee</td><td>$${(d.mileageRate || 1).toFixed(2)}/mi</td><td>${d.mileage > 0 ? d.mileage + ' mi' : '0'}</td><td>${d.mileage > 0 ? formatCurrency(d.mileageTotal) : '$0.00'}</td></tr>`}
         ${addTimeRow}
         <tr><td>Gratuity (${d.numServers} servers × $30/hr)</td><td>$${d.numServers * 30}/hr</td><td>${d.gratuityHrs} hrs</td><td>${formatCurrency(d.gratuityTotal)}</td></tr>
         ${customRows}
@@ -1440,7 +1458,7 @@ function updateSummary(d) {
   const rows = [
     ['Base Event Fee', formatCurrency(d.baseFee || 0)],
     [`Bingsu Servings (${d.servings} × $${d.bingsuUnitPrice})`, formatCurrency(d.bingsuTotal)],
-    d.omitMileage ? null : [`Mileage (${d.mileage} mi)`, formatCurrency(d.mileageTotal)],
+    d.omitMileage ? null : [`Mileage (${d.mileage} mi @ $${(d.mileageRate || 1).toFixed(2)}/mi)`, formatCurrency(d.mileageTotal)],
     d.addTimeQty > 0 ? [`Additional Time (${d.addTimeQty} hr)`, formatCurrency(d.addTimeTotal)] : null,
     [`Gratuity (${d.gratuityHrs} hrs × $${d.numServers * 30}/hr)`, formatCurrency(d.gratuityTotal)],
     ...(d.customItems || []).map(item => [`${item.name} (×${item.qty})`, formatCurrency(item.total)]),
@@ -1508,6 +1526,7 @@ async function logToSheets() {
     guestCount:    document.getElementById('guestCount').value || 0,
     setupSpace:    d.setupSpace,
     mileage:       d.mileage,
+    mileageRate:   d.mileageRate,
     baseFee:       d.baseFee,
     bingsuTotal:   d.bingsuTotal,
     mileageTotal:  d.mileageTotal,
