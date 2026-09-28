@@ -1272,20 +1272,21 @@ function generateInvoice() {
     serviceHours = (eh * 60 + em - sh * 60 - sm) / 60;
   }
   const includedHours = getIncludedHours(servings);
-  // Auto-calculate overage from start/end times
-  if (includedHours && serviceHours > includedHours) {
-    const overHours = serviceHours - includedHours;
-    addTimeQty += overHours;
-    addTimeTotal += Math.ceil(overHours / 0.5) * 100;
-  }
-  // Add manual extra hours on top
+  // Additional Service Time is entered manually — it is NOT auto-derived from the
+  // start/end time gap, since actual on-site times can vary (early arrival, running
+  // long as a courtesy, etc.) without that extra time being billable. Enter hours in
+  // the "Additional Service Time" field only when you want to bill/pay for time beyond
+  // the package's included hours.
   const manualAddHours = parseFloat(document.getElementById('addServiceHours').value);
   if (!isNaN(manualAddHours) && manualAddHours > 0) {
     addTimeQty += manualAddHours;
     addTimeTotal += Math.ceil(manualAddHours / 0.5) * 100;
   }
-  // Total service hours = included hours (or actual) + additional
-  const totalServiceHours = (serviceHours || includedHours || 0) + ((!isNaN(manualAddHours) && manualAddHours > 0) ? manualAddHours : 0);
+  // Total service hours (for gratuity) = package's included hours + manually entered
+  // additional hours. Falls back to the actual start/end gap only when the servings
+  // tier has no defined included-hours value (custom/large-order quotes).
+  const baseServiceHours = (includedHours != null) ? includedHours : (serviceHours || 0);
+  const totalServiceHours = baseServiceHours + ((!isNaN(manualAddHours) && manualAddHours > 0) ? manualAddHours : 0);
   // Gratuity — servers × $30/hr × total service hours (included + additional)
   const gratuityRate = numServers * 30;
   const gratuityHrs = totalServiceHours;
