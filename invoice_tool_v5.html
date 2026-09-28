@@ -1282,11 +1282,11 @@ function generateInvoice() {
     addTimeQty += manualAddHours;
     addTimeTotal += Math.ceil(manualAddHours / 0.5) * 100;
   }
-  // Total service hours (for gratuity) = package's included hours + manually entered
-  // additional hours. Falls back to the actual start/end gap only when the servings
-  // tier has no defined included-hours value (custom/large-order quotes).
-  const baseServiceHours = (includedHours != null) ? includedHours : (serviceHours || 0);
-  const totalServiceHours = baseServiceHours + ((!isNaN(manualAddHours) && manualAddHours > 0) ? manualAddHours : 0);
+  // Total service hours (for gratuity) = actual on-site time from start/end (falling
+  // back to the package's included hours if no times were entered), plus any manually
+  // entered additional hours. Gratuity always reflects real hours worked — it's the
+  // separate "Additional Service Time" line above that stays manual-only for billing.
+  const totalServiceHours = (serviceHours || includedHours || 0) + ((!isNaN(manualAddHours) && manualAddHours > 0) ? manualAddHours : 0);
   // Gratuity — servers × $30/hr × total service hours (included + additional)
   const gratuityRate = numServers * 30;
   const gratuityHrs = totalServiceHours;
