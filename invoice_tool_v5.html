@@ -1039,56 +1039,23 @@ async function parseInquiry() {
   }
 }
 // ── MILEAGE CALCULATOR ─────────────────────────────────────────────────────
-let _mapsLoadPromise = null;
-function loadGoogleMaps(apiKey) {
-  if (window.google && window.google.maps && window.google.maps.DirectionsService) return Promise.resolve();
-  if (_mapsLoadPromise) return _mapsLoadPromise;
-  // Google calls this if the key is rejected (Maps JavaScript API not enabled, website not allowed, billing off)
-  window.gm_authFailure = () => {
-    const err = new Error('Google rejected the API key: enable "Maps JavaScript API" and allow coolbeansbingsu.github.io on the key');
-    if (window._mapsAuthReject) window._mapsAuthReject(err);
-    toast(`Mileage failed: ${err.message}`, 'red');
-  };
-  _mapsLoadPromise = new Promise((resolve, reject) => {
-    window._mapsReady = () => resolve();
-    const sc = document.createElement('script');
-    sc.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&callback=_mapsReady&loading=async`;
-    sc.async = true;
-    sc.onerror = () => { _mapsLoadPromise = null; reject(new Error('Could not load Google Maps')); };
-    document.head.appendChild(sc);
-  });
-  return _mapsLoadPromise;
-}
 async function calculateMileage() {
-  const apiKey = document.getElementById('googleApiKey').value.trim();
   const venue = document.getElementById('venue').value.trim();
   const eventDate = document.getElementById('eventDate').value;
   const startTime = document.getElementById('startTime').value;
-  if (!apiKey) { toast('Please enter your Google API key', 'red'); return; }
   if (!venue) { toast('Please enter a venue address', 'red'); return; }
   const btn = document.getElementById('mileageBtn');
   btn.disabled = true;
   btn.innerHTML = '<span>⏳</span> Calculating...';
   try {
-    // Google Maps JavaScript API DirectionsService — runs in the browser, no proxy needed
-    await loadGoogleMaps(apiKey);
-    const result = await new Promise((resolve, reject) => {
-      window._mapsAuthReject = reject;
-      new google.maps.DirectionsService().route({
-        origin: ORIGIN,
-        destination: venue,
-        travelMode: google.maps.TravelMode.DRIVING,
-        avoidTolls: true,
-        unitSystem: google.maps.UnitSystem.IMPERIAL
-      }, (res, status) => {
-        if (status === 'OK' && res && res.routes && res.routes.length) resolve(res);
-        else reject(new Error(status === 'NOT_FOUND' || status === 'ZERO_RESULTS'
-          ? `Google couldn't find a driving route to that venue address (${status})`
-          : `Google Directions returned ${status}`));
-      });
+    // Mileage via Google Apps Script's built-in Maps service (no API key or Cloud settings needed)
+    const resp = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'mileage', origin: ORIGIN, destination: venue })
     });
-    const leg = result.routes[0].legs[0];
-    const route = { distanceMeters: leg.distance.value, duration: `${leg.duration.value}s` };
+    const data = await resp.json();
+    if (data.status !== 'success') throw new Error(data.message || 'No routes found');
+    const route = { distanceMeters: data.distanceMeters, duration: `${data.durationSeconds}s` };
     const oneWayMiles = (route.distanceMeters / 1609.34).toFixed(1);
     const roundTrip = (parseFloat(oneWayMiles) * 2).toFixed(1);
     // Departure time
